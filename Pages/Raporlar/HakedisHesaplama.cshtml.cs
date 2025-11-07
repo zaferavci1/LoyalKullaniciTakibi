@@ -60,10 +60,16 @@ namespace LoyalKullaniciTakip.Pages.Raporlar
                 .Where(p => p.Personel_Detay_Muhasebe != null)
                 .ToListAsync();
 
-            // 3. Tüm puantaj kayıtlarını çek (detaylı mesai hesabı için)
+            // 3. Puantaj durumlarını çek (kesinti hesapları için)
+            var raporluDurum = await _context.Lookup_PuantajDurumlari
+                .FirstOrDefaultAsync(d => d.Kod == "R" || d.Tanim.Contains("Raporlu"));
+            var devamsizDurum = await _context.Lookup_PuantajDurumlari
+                .FirstOrDefaultAsync(d => d.Kod == "D" || d.Tanim.Contains("Devamsız"));
+
+            // 4. Tüm puantaj kayıtlarını çek (detaylı mesai hesabı için)
             var ayinIlkGunu = new DateTime(SecilenYil, SecilenAy, 1);
             var ayinSonGunu = ayinIlkGunu.AddMonths(1).AddDays(-1);
-            
+
             var puantajKayitlari = await _context.PuantajGunluk
                 .Include(p => p.Personel)
                 .Include(p => p.PuantajDurum)
@@ -96,15 +102,18 @@ namespace LoyalKullaniciTakip.Pages.Raporlar
                 decimal pazarFazlaMesai = 0;
                 int raporluGun = 0;
                 int ucretsizIzinGun = 0;
+                int devamsizGun = 0;
 
                 foreach (var kayit in grup)
                 {
                     var mesaiSaati = kayit.MesaiSaati ?? 0;
-                    
+
                     // Kesinti günlerini say
-                    if (kayit.PuantajDurumID == 2) // Raporlu
+                    if (raporluDurum != null && kayit.PuantajDurumID == raporluDurum.PuantajDurumID)
                         raporluGun++;
-                    else if (kayit.PuantajDurumID == 5) // Ücretsiz İzin
+                    else if (devamsizDurum != null && kayit.PuantajDurumID == devamsizDurum.PuantajDurumID)
+                        devamsizGun++;
+                    else if (kayit.PuantajDurumID == 5) // Ücretsiz İzin (eski ID korundu)
                         ucretsizIzinGun++;
 
                     // Mesai saati varsa hesapla
@@ -142,8 +151,8 @@ namespace LoyalKullaniciTakip.Pages.Raporlar
                 var pazarFazlaMesaiUcreti = pazarFazlaMesai * saatlikUcret * pazarKatsayi;
                 var toplamFazlaMesaiUcreti = haftaIciFazlaMesaiUcreti + cumartesiFazlaMesaiUcreti + pazarFazlaMesaiUcreti;
 
-                // Kesintiler
-                var toplamKesintiGunu = raporluGun + ucretsizIzinGun;
+                // Kesintiler (Raporlu, Devamsız, Ücretsiz İzin)
+                var toplamKesintiGunu = raporluGun + devamsizGun + ucretsizIzinGun;
                 var kesintiTutari = toplamKesintiGunu * gunlukMaas;
 
                 // Net hakediş
@@ -155,6 +164,7 @@ namespace LoyalKullaniciTakip.Pages.Raporlar
                     PersonelAdSoyad = $"{grup.Key.Ad} {grup.Key.Soyad}",
                     CalisilanGunSayisi = grup.Count(x => x.PuantajDurumID == 1),
                     RaporluGunSayisi = raporluGun,
+                    DevamsizGunSayisi = devamsizGun,
                     YillikIzinGunSayisi = grup.Count(x => x.PuantajDurumID == 3),
                     MazeretIzniGunSayisi = grup.Count(x => x.PuantajDurumID == 4),
                     UcretsizIzinGunSayisi = ucretsizIzinGun,
@@ -292,6 +302,11 @@ namespace LoyalKullaniciTakip.Pages.Raporlar
         /// </summary>
         private async Task<List<PuantajOzetViewModel>> GetPuantajOzetleri(int yil, int ay)
         {
+            // Devamsız durumunu lookup'tan çek
+            var devamsizDurum = await _context.Lookup_PuantajDurumlari
+                .FirstOrDefaultAsync(d => d.Kod == "D" || d.Tanim.Contains("Devamsız"));
+            var devamsizDurumId = devamsizDurum?.PuantajDurumID ?? 0;
+
             var puantajOzetleri = await _context.PuantajGunluk
                 .Include(p => p.Personel)
                 .Include(p => p.PuantajDurum)
@@ -302,6 +317,7 @@ namespace LoyalKullaniciTakip.Pages.Raporlar
                     PersonelAdSoyad = g.Key.Ad + " " + g.Key.Soyad,
                     CalisilanGunSayisi = g.Count(x => x.PuantajDurumID == 1), // Çalıştı
                     RaporluGunSayisi = g.Count(x => x.PuantajDurumID == 2), // Raporlu
+                    DevamsizGunSayisi = g.Count(x => x.PuantajDurumID == devamsizDurumId), // Devamsız
                     YillikIzinGunSayisi = g.Count(x => x.PuantajDurumID == 3), // Yıllık İzin
                     MazeretIzniGunSayisi = g.Count(x => x.PuantajDurumID == 4), // Mazeret İzni
                     UcretsizIzinGunSayisi = g.Count(x => x.PuantajDurumID == 5), // Ücretsiz İzin

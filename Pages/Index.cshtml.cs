@@ -94,8 +94,16 @@ public class IndexModel : PageModel
                 .CountAsync(p => p.Tarih == bugun && p.PuantajDurumID == raporluDurum.PuantajDurumID);
         }
 
-        // 5. Aktif Çalışan Sayısı = Toplam - İzinli - Devamsız - Raporlu
-        AktifCalisanSayisi = ToplamPersonelSayisi - BugunIzinliOlanlar.Count - BugunDevamsizSayisi - BugunRaporluSayisi;
+        // 5. Aktif Çalışan Sayısı = Bugün PuantajGunluk'ta "Ç" (Çalıştı) olarak işaretlenenler
+        // NOT: İzinTalepleri tablosu kullanılmıyor, sadece manuel puantaj girişi baz alınıyor
+        var calistiDurum = await _context.Lookup_PuantajDurumlari
+            .FirstOrDefaultAsync(p => p.Kod == "Ç" || p.Tanim.Contains("Çalıştı"));
+
+        if (calistiDurum != null)
+        {
+            AktifCalisanSayisi = await _context.PuantajGunluk
+                .CountAsync(p => p.Tarih == bugun && p.PuantajDurumID == calistiDurum.PuantajDurumID);
+        }
     }
 }
 

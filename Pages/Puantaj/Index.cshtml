@@ -223,11 +223,14 @@ else
         // Tüm puantaj durum select'lerini bul
         const durumSelects = document.querySelectorAll('.puantaj-durum-select');
 
-        // Günlük çalışma saati (Genel Ayarlar'dan alınıyor)
-        const gunlukCalismaSaati = @Model.GunlukCalismaSaati;
+        // Günlük çalışma saati (Genel Ayarlar'dan alınıyor) - Nokta kullanarak parse et
+        const gunlukCalismaSaati = parseFloat('@Model.GunlukCalismaSaati'.replace(',', '.'));
 
         // Otomatik mesai saati eklenecek durum kodları
         const mesaiEklenenDurumlari = ['Ç', 'P', 'FM', 'Gİ', 'Yİ'];
+
+        // Devamsız durumunda mesai sıfırlanacak
+        const devamsizKodu = 'D';
 
         // Her select için kontrol fonksiyonu
         function setDefaultMesaiSaati(selectElement) {
@@ -236,10 +239,16 @@ else
             const selectedOption = selectElement.options[selectElement.selectedIndex];
             const kod = selectedOption.getAttribute('data-kod');
 
+            // Devamsız seçilirse mesai saati 0 yap
+            if (kod === devamsizKodu) {
+                mesaiInput.value = 0;
+            }
             // Eğer input boşsa veya sıfırsa VE belirtilen durumlardan biriyse günlük çalışma saatini ekle
-            const mevcutDeger = mesaiInput.value ? parseFloat(mesaiInput.value) : 0;
-            if (mesaiEklenenDurumlari.includes(kod) && mevcutDeger === 0) {
-                mesaiInput.value = gunlukCalismaSaati;
+            else {
+                const mevcutDeger = mesaiInput.value ? parseFloat(mesaiInput.value.replace(',', '.')) : 0;
+                if (mesaiEklenenDurumlari.includes(kod) && mevcutDeger === 0) {
+                    mesaiInput.value = gunlukCalismaSaati;
+                }
             }
         }
 

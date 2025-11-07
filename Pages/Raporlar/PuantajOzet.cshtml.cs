@@ -47,6 +47,11 @@ namespace LoyalKullaniciTakip.Pages.Raporlar
 
             RaporGosterilsin = true;
 
+            // Devamsız durumunu lookup'tan çek
+            var devamsizDurum = await _context.Lookup_PuantajDurumlari
+                .FirstOrDefaultAsync(d => d.Kod == "D" || d.Tanim.Contains("Devamsız"));
+            var devamsizDurumId = devamsizDurum?.PuantajDurumID ?? 0;
+
             // Kritik LINQ Sorgusu: GroupBy ile Puantaj Özeti
             Rapor = await _context.PuantajGunluk
                 .Include(p => p.Personel)
@@ -58,6 +63,7 @@ namespace LoyalKullaniciTakip.Pages.Raporlar
                     PersonelAdSoyad = g.Key.Ad + " " + g.Key.Soyad,
                     CalisilanGunSayisi = g.Count(x => x.PuantajDurumID == 1), // Çalıştı
                     RaporluGunSayisi = g.Count(x => x.PuantajDurumID == 2), // Raporlu
+                    DevamsizGunSayisi = g.Count(x => x.PuantajDurumID == devamsizDurumId), // Devamsız
                     YillikIzinGunSayisi = g.Count(x => x.PuantajDurumID == 3), // Yıllık İzin
                     MazeretIzniGunSayisi = g.Count(x => x.PuantajDurumID == 4), // Mazeret İzni
                     UcretsizIzinGunSayisi = g.Count(x => x.PuantajDurumID == 5), // Ücretsiz İzin
@@ -107,6 +113,7 @@ namespace LoyalKullaniciTakip.Pages.Raporlar
         public string PersonelAdSoyad { get; set; } = string.Empty;
         public int CalisilanGunSayisi { get; set; }
         public int RaporluGunSayisi { get; set; }
+        public int DevamsizGunSayisi { get; set; }
         public int YillikIzinGunSayisi { get; set; }
         public int MazeretIzniGunSayisi { get; set; }
         public int UcretsizIzinGunSayisi { get; set; }

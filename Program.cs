@@ -113,6 +113,21 @@ using (var scope = app.Services.CreateScope())
         );
         context.SaveChanges();
     }
+
+    // Puantaj durumları yoksa seed et
+    if (!context.Lookup_PuantajDurumlari.Any())
+    {
+        context.Lookup_PuantajDurumlari.AddRange(
+            new LoyalKullaniciTakip.Data.Lookups.Lookup_PuantajDurumlari { Kod = "Ç", Tanim = "Çalıştı" },
+            new LoyalKullaniciTakip.Data.Lookups.Lookup_PuantajDurumlari { Kod = "P", Tanim = "Pazar/Tatil" },
+            new LoyalKullaniciTakip.Data.Lookups.Lookup_PuantajDurumlari { Kod = "FM", Tanim = "Fazla Mesai" },
+            new LoyalKullaniciTakip.Data.Lookups.Lookup_PuantajDurumlari { Kod = "Gİ", Tanim = "Genel Tatil/İzin" },
+            new LoyalKullaniciTakip.Data.Lookups.Lookup_PuantajDurumlari { Kod = "Yİ", Tanim = "Yıllık İzin" },
+            new LoyalKullaniciTakip.Data.Lookups.Lookup_PuantajDurumlari { Kod = "D", Tanim = "Devamsız" },
+            new LoyalKullaniciTakip.Data.Lookups.Lookup_PuantajDurumlari { Kod = "R", Tanim = "Raporlu" }
+        );
+        context.SaveChanges();
+    }
 }
 
 // Configure the HTTP request pipeline.
