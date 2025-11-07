@@ -1,0 +1,134 @@
+@page "{talepId:int}"
+@model LoyalKullaniciTakip.Pages.Izin.DetailsModel
+@{
+    ViewData["Title"] = "İzin Talebi Detayı";
+    var durumClass = Model.IzinTalebi.OnayDurumu switch
+    {
+        0 => "warning",
+        1 => "success",
+        2 => "danger",
+        _ => "secondary"
+    };
+    var durumText = Model.IzinTalebi.OnayDurumu switch
+    {
+        0 => "Bekliyor",
+        1 => "Onaylandı",
+        2 => "Reddedildi",
+        _ => "Bilinmiyor"
+    };
+}
+
+<h1>İzin Talebi Detayı</h1>
+
+<hr />
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="card">
+    <div class="card-header bg-@durumClass text-white">
+        <h4 class="mb-0">Durum: @durumText</h4>
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Talep No</dt>
+            <dd class="col-sm-9">@Model.IzinTalebi.TalepID</dd>
+
+            <dt class="col-sm-3">Personel</dt>
+            <dd class="col-sm-9">@Model.IzinTalebi.Personel.Ad @Model.IzinTalebi.Personel.Soyad</dd>
+
+            <dt class="col-sm-3">TC Kimlik No</dt>
+            <dd class="col-sm-9">@Model.IzinTalebi.Personel.TCKimlikNo</dd>
+
+            <dt class="col-sm-3">İzin Tipi</dt>
+            <dd class="col-sm-9">
+                <span class="badge bg-primary">@Model.IzinTalebi.IzinTipi.Tanim</span>
+                @if (Model.IzinTalebi.IzinTipi.YillikIzindenDuserMi)
+                {
+                    <span class="badge bg-info">Yıllık İzinden Düşer</span>
+                }
+            </dd>
+
+            <dt class="col-sm-3">Başlangıç Tarihi</dt>
+            <dd class="col-sm-9">@Model.IzinTalebi.BaslangicTarihi.ToString("dd.MM.yyyy")</dd>
+
+            <dt class="col-sm-3">Bitiş Tarihi</dt>
+            <dd class="col-sm-9">@Model.IzinTalebi.BitisTarihi.ToString("dd.MM.yyyy")</dd>
+
+            <dt class="col-sm-3">Süre</dt>
+            <dd class="col-sm-9">
+                @{
+                    var gunSayisi = (Model.IzinTalebi.BitisTarihi - Model.IzinTalebi.BaslangicTarihi).Days + 1;
+                }
+                <strong>@gunSayisi gün</strong>
+            </dd>
+
+            <dt class="col-sm-3">Talep Tarihi</dt>
+            <dd class="col-sm-9">@Model.IzinTalebi.TalepTarihi.ToString("dd.MM.yyyy HH:mm")</dd>
+
+            <dt class="col-sm-3">Açıklama</dt>
+            <dd class="col-sm-9">
+                @if (!string.IsNullOrWhiteSpace(Model.IzinTalebi.Aciklama))
+                {
+                    @Model.IzinTalebi.Aciklama
+                }
+                else
+                {
+                    <span class="text-muted">Açıklama girilmemiş</span>
+                }
+            </dd>
+
+            @if (Model.IzinTalebi.OnaylayanPersonel != null)
+            {
+                <dt class="col-sm-3">Onaylayan</dt>
+                <dd class="col-sm-9">@Model.IzinTalebi.OnaylayanPersonel.Ad @Model.IzinTalebi.OnaylayanPersonel.Soyad</dd>
+            }
+        </dl>
+
+        @if (Model.IzinTalebi.OnayDurumu == 0)
+        {
+            <hr />
+            <div class="d-flex gap-2">
+                <form method="post" asp-page-handler="Onayla" asp-route-talepId="@Model.IzinTalebi.TalepID" 
+                      onsubmit="return confirm('Bu izin talebini onaylamak istediğinizden emin misiniz? Puantaj kayıtları otomatik olarak oluşturulacaktır.');">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Onayla
+                    </button>
+                </form>
+
+                <form method="post" asp-page-handler="Reddet" asp-route-talepId="@Model.IzinTalebi.TalepID"
+                      onsubmit="return confirm('Bu izin talebini reddetmek istediğinizden emin misiniz?');">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-x-circle"></i> Reddet
+                    </button>
+                </form>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="mt-3">
+    <a asp-page="./List" class="btn btn-secondary">Listeye Dön</a>
+</div>
+
+@if (Model.IzinTalebi.OnayDurumu == 1)
+{
+    <div class="alert alert-info mt-3">
+        <strong>Bilgi:</strong> Bu izin talebi onaylandığında, @Model.IzinTalebi.BaslangicTarihi.ToString("dd.MM.yyyy") - @Model.IzinTalebi.BitisTarihi.ToString("dd.MM.yyyy") 
+        tarihleri arasındaki tüm günler için otomatik puantaj kayıtları oluşturulmuştur.
+    </div>
+}
+

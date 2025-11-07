@@ -1,0 +1,158 @@
+@page
+@model LoyalKullaniciTakip.Pages.Personel.CreateModel
+@{
+    ViewData["Title"] = "Yeni Personel Ekle";
+}
+
+<h1>Yeni Personel Ekle</h1>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-8">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <!-- Personel Bilgileri -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Personel Bilgileri</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ViewModel.Ad" class="form-label"></label>
+                            <input asp-for="ViewModel.Ad" class="form-control" />
+                            <span asp-validation-for="ViewModel.Ad" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ViewModel.Soyad" class="form-label"></label>
+                            <input asp-for="ViewModel.Soyad" class="form-control" />
+                            <span asp-validation-for="ViewModel.Soyad" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ViewModel.TCKimlikNo" class="form-label"></label>
+                            <input asp-for="ViewModel.TCKimlikNo" class="form-control" maxlength="11" />
+                            <span asp-validation-for="ViewModel.TCKimlikNo" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ViewModel.DogumTarihi" class="form-label"></label>
+                            <input asp-for="ViewModel.DogumTarihi" class="form-control" type="date" />
+                            <span asp-validation-for="ViewModel.DogumTarihi" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ViewModel.Cinsiyet" class="form-label"></label>
+                        <select asp-for="ViewModel.Cinsiyet" class="form-select">
+                            <option value="">Seçiniz...</option>
+                            <option value="Erkek">Erkek</option>
+                            <option value="Kadın">Kadın</option>
+                        </select>
+                        <span asp-validation-for="ViewModel.Cinsiyet" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ViewModel.DepartmanID" class="form-label"></label>
+                            <select asp-for="ViewModel.DepartmanID" class="form-select" asp-items="ViewBag.DepartmanlarList">
+                                <option value="">Seçiniz...</option>
+                            </select>
+                            <span asp-validation-for="ViewModel.DepartmanID" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ViewModel.MeslekID" class="form-label"></label>
+                            <select asp-for="ViewModel.MeslekID" class="form-select" asp-items="ViewBag.MesleklerList">
+                                <option value="">Seçiniz...</option>
+                            </select>
+                            <span asp-validation-for="ViewModel.MeslekID" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SGK Detay Bilgileri -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">SGK Detay Bilgileri</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ViewModel.IseGirisTarihi" class="form-label"></label>
+                            <input asp-for="ViewModel.IseGirisTarihi" class="form-control" type="date" />
+                            <span asp-validation-for="ViewModel.IseGirisTarihi" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ViewModel.IsyeriSicilNo" class="form-label"></label>
+                            <input asp-for="ViewModel.IsyeriSicilNo" class="form-control" />
+                            <span asp-validation-for="ViewModel.IsyeriSicilNo" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ViewModel.CalismaTipiID" class="form-label"></label>
+                            <select asp-for="ViewModel.CalismaTipiID" class="form-select" asp-items="ViewBag.CalismaTipiList">
+                                <option value="">Seçiniz...</option>
+                            </select>
+                            <span asp-validation-for="ViewModel.CalismaTipiID" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ViewModel.SGKMeslekKoduID" class="form-label"></label>
+                            <select asp-for="ViewModel.SGKMeslekKoduID" class="form-select" asp-items="ViewBag.MeslekKodlariList">
+                                <option value="">Seçiniz...</option>
+                            </select>
+                            <span asp-validation-for="ViewModel.SGKMeslekKoduID" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Muhasebe Detay Bilgileri -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">Muhasebe Detay Bilgileri</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ViewModel.TemelMaas" class="form-label"></label>
+                            <input asp-for="ViewModel.TemelMaas" class="form-control" type="number" step="0.01" />
+                            <span asp-validation-for="ViewModel.TemelMaas" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ViewModel.MaasTipi" class="form-label"></label>
+                            <select asp-for="ViewModel.MaasTipi" class="form-select">
+                                <option value="">Seçiniz...</option>
+                                <option value="Aylık">Aylık</option>
+                                <option value="Günlük">Günlük</option>
+                                <option value="Saatlik">Saatlik</option>
+                            </select>
+                            <span asp-validation-for="ViewModel.MaasTipi" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ViewModel.IBAN" class="form-label"></label>
+                        <input asp-for="ViewModel.IBAN" class="form-control" maxlength="34" />
+                        <span asp-validation-for="ViewModel.IBAN" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Butonları -->
+            <div class="form-group">
+                <input type="submit" value="Kaydet" class="btn btn-primary btn-lg" />
+                <a asp-page="Index" class="btn btn-secondary btn-lg">İptal</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

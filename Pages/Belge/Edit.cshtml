@@ -1,0 +1,56 @@
+@page "{belgeId:int}"
+@model LoyalKullaniciTakip.Pages.Belge.EditModel
+@{
+    ViewData["Title"] = "Belge Düzenle";
+}
+
+<h1>Belge Düzenle</h1>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+        <form method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="BelgeAdi" class="form-label">Belge Adı</label>
+                <input asp-for="BelgeAdi" class="form-control" />
+                <span asp-validation-for="BelgeAdi" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="BelgeKategoriID" class="form-label">Belge Kategorisi</label>
+                <select asp-for="BelgeKategoriID" class="form-select" asp-items="ViewBag.BelgeKategorileriList">
+                    <option value="">Seçiniz...</option>
+                </select>
+                <span asp-validation-for="BelgeKategoriID" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Mevcut Dosya</label>
+                <div class="d-flex align-items-center">
+                    <a href="@Model.MevcutDosyaYolu" target="_blank" class="btn btn-sm btn-info me-2">Görüntüle</a>
+                    <span class="text-muted">@Model.MevcutDosyaYolu</span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="YeniDosya" class="form-label">Yeni Dosya (İsteğe Bağlı)</label>
+                <input asp-for="YeniDosya" type="file" class="form-control" />
+                <span asp-validation-for="YeniDosya" class="text-danger"></span>
+                <small class="form-text text-muted">Dosyayı değiştirmek istemiyorsanız boş bırakın.</small>
+            </div>
+
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary">Güncelle</button>
+                <a asp-page="/Personel/Details" asp-route-id="@Model.PersonelID" class="btn btn-secondary">İptal</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+

@@ -1,0 +1,41 @@
+@page "{belgeId:int}"
+@model LoyalKullaniciTakip.Pages.Belge.DeleteModel
+@{
+    ViewData["Title"] = "Belge Sil";
+}
+
+<h1>Belge Sil</h1>
+
+<h3>Bu belgeyi silmek istediğinizden emin misiniz?</h3>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+        <dl class="row">
+            <dt class="col-sm-4">Belge Adı</dt>
+            <dd class="col-sm-8">@Model.Belge.BelgeAdi</dd>
+
+            <dt class="col-sm-4">Kategori</dt>
+            <dd class="col-sm-8">@Model.Belge.BelgeKategori.Tanim</dd>
+
+            <dt class="col-sm-4">Yüklenme Tarihi</dt>
+            <dd class="col-sm-8">@Model.Belge.YuklenmeTarihi.ToString("dd.MM.yyyy HH:mm")</dd>
+
+            <dt class="col-sm-4">Dosya</dt>
+            <dd class="col-sm-8">
+                <a href="@Model.Belge.DosyaYolu" target="_blank" class="btn btn-sm btn-info">Görüntüle</a>
+            </dd>
+        </dl>
+
+        <div class="alert alert-warning" role="alert">
+            <strong>Uyarı:</strong> Bu işlem geri alınamaz. Belge ve dosya kalıcı olarak silinecektir.
+        </div>
+
+        <form method="post">
+            <button type="submit" class="btn btn-danger">Sil</button>
+            <a asp-page="/Personel/Details" asp-route-id="@Model.Belge.PersonelID" class="btn btn-secondary">İptal</a>
+        </form>
+    </div>
+</div>
+

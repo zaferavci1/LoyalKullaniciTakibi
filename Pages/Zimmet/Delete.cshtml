@@ -1,0 +1,41 @@
+@page "{zimmetId:int}"
+@model LoyalKullaniciTakip.Pages.Zimmet.DeleteModel
+@{
+    ViewData["Title"] = "Zimmet İade Et / Sil";
+}
+
+<h1>Zimmet İade Et / Sil</h1>
+
+<h3>Bu zimmet kaydını silmek istediğinizden emin misiniz?</h3>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+        <dl class="row">
+            <dt class="col-sm-4">Personel</dt>
+            <dd class="col-sm-8">@Model.Zimmet.Personel.Ad @Model.Zimmet.Personel.Soyad</dd>
+
+            <dt class="col-sm-4">Demirbaş Adı</dt>
+            <dd class="col-sm-8">@Model.Zimmet.DemirbasAdi</dd>
+
+            <dt class="col-sm-4">Marka/Model</dt>
+            <dd class="col-sm-8">@Model.Zimmet.MarkaModel</dd>
+
+            <dt class="col-sm-4">Seri No</dt>
+            <dd class="col-sm-8">@Model.Zimmet.SeriNo</dd>
+
+            <dt class="col-sm-4">Veriliş Tarihi</dt>
+            <dd class="col-sm-8">@Model.Zimmet.VerilisTarihi.ToString("dd.MM.yyyy")</dd>
+
+            <dt class="col-sm-4">İade Tarihi</dt>
+            <dd class="col-sm-8">@(Model.Zimmet.IadeTarihi.HasValue ? Model.Zimmet.IadeTarihi.Value.ToString("dd.MM.yyyy") : "İade Edilmemiş")</dd>
+        </dl>
+
+        <form method="post">
+            <button type="submit" class="btn btn-danger">Sil</button>
+            <a asp-page="/Personel/Details" asp-route-id="@Model.Zimmet.PersonelID" class="btn btn-secondary">İptal</a>
+        </form>
+    </div>
+</div>
+

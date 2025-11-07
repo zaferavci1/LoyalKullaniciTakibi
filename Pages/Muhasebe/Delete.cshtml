@@ -1,0 +1,38 @@
+@page "{hareketId:int}"
+@model LoyalKullaniciTakip.Pages.Muhasebe.DeleteModel
+@{
+    ViewData["Title"] = "Muhasebe Hareketi Sil";
+}
+
+<h1>Muhasebe Hareketi Sil</h1>
+
+<h3>Bu muhasebe hareketini silmek istediğinizden emin misiniz?</h3>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+        <dl class="row">
+            <dt class="col-sm-4">Personel</dt>
+            <dd class="col-sm-8">@Model.Hareket.Personel.Ad @Model.Hareket.Personel.Soyad</dd>
+
+            <dt class="col-sm-4">Hareket Tipi</dt>
+            <dd class="col-sm-8">@Model.Hareket.HareketTipi.Tanim</dd>
+
+            <dt class="col-sm-4">Tutar</dt>
+            <dd class="col-sm-8">@Model.Hareket.Tutar.ToString("N2") ₺</dd>
+
+            <dt class="col-sm-4">Tarih</dt>
+            <dd class="col-sm-8">@Model.Hareket.Tarih.ToString("dd.MM.yyyy")</dd>
+
+            <dt class="col-sm-4">Açıklama</dt>
+            <dd class="col-sm-8">@Model.Hareket.Aciklama</dd>
+        </dl>
+
+        <form method="post">
+            <button type="submit" class="btn btn-danger">Sil</button>
+            <a asp-page="/Personel/Details" asp-route-id="@Model.Hareket.PersonelID" class="btn btn-secondary">İptal</a>
+        </form>
+    </div>
+</div>
+

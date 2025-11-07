@@ -1,0 +1,58 @@
+@page "{zimmetId:int}"
+@model LoyalKullaniciTakip.Pages.Zimmet.EditModel
+@{
+    ViewData["Title"] = "Zimmet Düzenle";
+}
+
+<h1>Zimmet Düzenle</h1>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="DemirbasAdi" class="form-label">Demirbaş Adı</label>
+                <input asp-for="DemirbasAdi" class="form-control" />
+                <span asp-validation-for="DemirbasAdi" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="MarkaModel" class="form-label">Marka/Model</label>
+                <input asp-for="MarkaModel" class="form-control" />
+                <span asp-validation-for="MarkaModel" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="SeriNo" class="form-label">Seri No</label>
+                <input asp-for="SeriNo" class="form-control" />
+                <span asp-validation-for="SeriNo" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="VerilisTarihi" class="form-label">Veriliş Tarihi</label>
+                <input asp-for="VerilisTarihi" class="form-control" type="date" />
+                <span asp-validation-for="VerilisTarihi" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="IadeTarihi" class="form-label">İade Tarihi (Opsiyonel)</label>
+                <input asp-for="IadeTarihi" class="form-control" type="date" />
+                <span asp-validation-for="IadeTarihi" class="text-danger"></span>
+                <small class="form-text text-muted">İade edilmişse tarih giriniz, aksi takdirde boş bırakınız.</small>
+            </div>
+
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary">Güncelle</button>
+                <a asp-page="/Personel/Details" asp-route-id="@Model.PersonelID" class="btn btn-secondary">İptal</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+

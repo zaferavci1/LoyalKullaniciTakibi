@@ -1,0 +1,365 @@
+@page
+@model LoyalKullaniciTakip.Pages.Raporlar.PuantajOzetModel
+@{
+    ViewData["Title"] = "Puantaj Özet Raporu";
+    var turkishCulture = new System.Globalization.CultureInfo("tr-TR");
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-6">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-calendar2-check me-2" viewBox="0 0 16 16">
+                    <path d="M10.854 8.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                    <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z"/>
+                    <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5z"/>
+                </svg>
+                Puantaj Özet Raporu
+            </h1>
+            <p class="text-muted">Aylık puantaj detaylarını görüntüleyin</p>
+        </div>
+        <div class="col-auto">
+            @if (Model.RaporGosterilsin)
+            {
+                <button class="btn btn-success" onclick="window.print()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer me-1" viewBox="0 0 16 16">
+                        <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
+                        <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1"/>
+                    </svg>
+                    Yazdır
+                </button>
+            }
+            <a href="/" class="btn btn-outline-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house me-1" viewBox="0 0 16 16">
+                    <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/>
+                </svg>
+                Ana Sayfa
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtre Formu -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-funnel me-2" viewBox="0 0 16 16">
+                    <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2z"/>
+                </svg>
+                Rapor Filtresi
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label asp-for="SecilenAy" class="form-label">Ay</label>
+                        <select asp-for="SecilenAy" asp-items="Model.AyListesi" class="form-select">
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="SecilenYil" class="form-label">Yıl</label>
+                        <select asp-for="SecilenYil" asp-items="Model.YilListesi" class="form-select">
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search me-1" viewBox="0 0 16 16">
+                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                            </svg>
+                            Raporu Getir
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Rapor Sonuçları -->
+    @if (Model.RaporGosterilsin)
+    {
+        var ayAdi = turkishCulture.DateTimeFormat.GetMonthName(Model.SecilenAy);
+        
+        <!-- Özet Kartlar -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-white-50">Personel Sayısı</h6>
+                        <h2 class="mb-0">@Model.Rapor.Count</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-white-50">Toplam Çalışılan Gün</h6>
+                        <h2 class="mb-0">@Model.Rapor.Sum(r => r.CalisilanGunSayisi)</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-dark shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2">Toplam İzin Günü</h6>
+                        <h2 class="mb-0">@Model.Rapor.Sum(r => r.YillikIzinGunSayisi + r.MazeretIzniGunSayisi + r.UcretsizIzinGunSayisi)</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-white-50">Toplam Mesai Saati</h6>
+                        <h2 class="mb-0">@Model.Rapor.Sum(r => r.ToplamMesaiSaati).ToString("F1") <small class="fs-6">saat</small></h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detaylı Rapor Tablosu -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    @ayAdi @Model.SecilenYil Puantaj Özeti
+                </h5>
+                <small class="text-muted">Rapor Tarihi: @DateTime.Today.ToString("dd MMMM yyyy", turkishCulture)</small>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.Rapor.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Personel Ad Soyad</th>
+                                    <th class="text-center" title="Çalıştı">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle me-1" viewBox="0 0 16 16">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                            <path d="m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05"/>
+                                        </svg>
+                                        Çalıştı
+                                    </th>
+                                    <th class="text-center" title="Raporlu">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-medical me-1" viewBox="0 0 16 16">
+                                            <path d="M8.5 4.5a.5.5 0 0 0-1 0v.634l-.549-.317a.5.5 0 1 0-.5.866L7 6l-.549.317a.5.5 0 1 0 .5.866l.549-.317V7.5a.5.5 0 1 0 1 0v-.634l.549.317a.5.5 0 1 0 .5-.866L9 6l.549-.317a.5.5 0 1 0-.5-.866l-.549.317zM5.5 9a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 10.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5"/>
+                                            <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2zm10-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1"/>
+                                        </svg>
+                                        Raporlu
+                                    </th>
+                                    <th class="text-center" title="Yıllık İzin">Yıllık İzin</th>
+                                    <th class="text-center" title="Mazeret İzni">Mazeret</th>
+                                    <th class="text-center" title="Ücretsiz İzin">Ücretsiz</th>
+                                    <th class="text-center" title="Tatil Günleri">Tatil</th>
+                                    <th class="text-center" title="Fazla Mesai">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clock-history me-1" viewBox="0 0 16 16">
+                                            <path d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022zm2.004.45a7 7 0 0 0-.985-.299l.219-.976q.576.129 1.126.342zm1.37.71a7 7 0 0 0-.439-.27l.493-.87a8 8 0 0 1 .979.654l-.615.789a7 7 0 0 0-.418-.302zm1.834 1.79a7 7 0 0 0-.653-.796l.724-.69q.406.429.747.91zm.744 1.352a7 7 0 0 0-.214-.468l.893-.45a8 8 0 0 1 .45 1.088l-.95.313a7 7 0 0 0-.179-.483m.53 2.507a7 7 0 0 0-.1-1.025l.985-.17q.1.58.116 1.17zm-.131 1.538q.05-.254.081-.51l.993.123a8 8 0 0 1-.23 1.155l-.964-.267q.069-.247.12-.501m-.952 2.379q.276-.436.486-.908l.914.405q-.24.54-.555 1.038zm-.964 1.205q.183-.183.35-.378l.758.653a8 8 0 0 1-.401.432z"/>
+                                            <path d="M8 1a7 7 0 1 0 4.95 11.95l.707.707A8.001 8.001 0 1 1 8 0z"/>
+                                            <path d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5"/>
+                                        </svg>
+                                        F.Mesai
+                                    </th>
+                                    <th class="text-center" title="Toplam Mesai Saati">Mesai Saati</th>
+                                    <th class="text-center" title="Toplam Gün Sayısı">Toplam Gün</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var rapor in Model.Rapor)
+                                {
+                                    <tr>
+                                        <td><strong>@rapor.PersonelAdSoyad</strong></td>
+                                        <td class="text-center">
+                                            <span class="badge bg-success">@rapor.CalisilanGunSayisi</span>
+                                        </td>
+                                        <td class="text-center">
+                                            @if (rapor.RaporluGunSayisi > 0)
+                                            {
+                                                <span class="badge bg-danger">@rapor.RaporluGunSayisi</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            @if (rapor.YillikIzinGunSayisi > 0)
+                                            {
+                                                <span class="badge bg-primary">@rapor.YillikIzinGunSayisi</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            @if (rapor.MazeretIzniGunSayisi > 0)
+                                            {
+                                                <span class="badge bg-info">@rapor.MazeretIzniGunSayisi</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            @if (rapor.UcretsizIzinGunSayisi > 0)
+                                            {
+                                                <span class="badge bg-warning text-dark">@rapor.UcretsizIzinGunSayisi</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            @if (rapor.TatilGunSayisi > 0)
+                                            {
+                                                <span class="badge bg-secondary">@rapor.TatilGunSayisi</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            @if (rapor.FazlaMesaiGunSayisi > 0)
+                                            {
+                                                <span class="badge bg-dark">@rapor.FazlaMesaiGunSayisi</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            @if (rapor.ToplamMesaiSaati > 0)
+                                            {
+                                                <strong>@rapor.ToplamMesaiSaati.ToString("F1")</strong>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            <strong class="text-primary">@rapor.ToplamGunSayisi</strong>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot class="table-light fw-bold">
+                                <tr>
+                                    <td>TOPLAM:</td>
+                                    <td class="text-center text-success">@Model.Rapor.Sum(r => r.CalisilanGunSayisi)</td>
+                                    <td class="text-center text-danger">@Model.Rapor.Sum(r => r.RaporluGunSayisi)</td>
+                                    <td class="text-center text-primary">@Model.Rapor.Sum(r => r.YillikIzinGunSayisi)</td>
+                                    <td class="text-center text-info">@Model.Rapor.Sum(r => r.MazeretIzniGunSayisi)</td>
+                                    <td class="text-center text-warning">@Model.Rapor.Sum(r => r.UcretsizIzinGunSayisi)</td>
+                                    <td class="text-center">@Model.Rapor.Sum(r => r.TatilGunSayisi)</td>
+                                    <td class="text-center">@Model.Rapor.Sum(r => r.FazlaMesaiGunSayisi)</td>
+                                    <td class="text-center">@Model.Rapor.Sum(r => r.ToplamMesaiSaati).ToString("F1")</td>
+                                    <td class="text-center text-primary">@Model.Rapor.Sum(r => r.ToplamGunSayisi)</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center text-muted py-5">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+                            <path d="M4.98 4a.5.5 0 0 0-.39.188L1.54 8H6a.5.5 0 0 1 .5.5 1.5 1.5 0 1 0 3 0A.5.5 0 0 1 10 8h4.46l-3.05-3.812A.5.5 0 0 0 11.02 4zm9.954 5H10.45a2.5 2.5 0 0 1-4.9 0H1.066l.32 2.562a.5.5 0 0 0 .497.438h12.234a.5.5 0 0 0 .496-.438zM3.809 3.563A1.5 1.5 0 0 1 4.981 3h6.038a1.5 1.5 0 0 1 1.172.563l3.7 4.625a.5.5 0 0 1 .105.374l-.39 3.124A1.5 1.5 0 0 1 14.117 13H1.883a1.5 1.5 0 0 1-1.489-1.314l-.39-3.124a.5.5 0 0 1 .106-.374z"/>
+                        </svg>
+                        <p>Seçilen ay için puantaj kaydı bulunamadı</p>
+                        <small>Lütfen puantaj girişi yapın veya farklı bir ay seçin.</small>
+                    </div>
+                }
+            </div>
+        </div>
+
+        @if (Model.Rapor.Any())
+        {
+            <!-- İstatistik Özeti -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card border-info">
+                        <div class="card-header bg-info text-white">
+                            <h6 class="mb-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bar-chart-fill me-2" viewBox="0 0 16 16">
+                                    <path d="M1 11a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zm5-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm5-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1z"/>
+                                </svg>
+                                Ortalama Değerler
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            @{
+                                var kisiBasiCalisilanGun = (double)Model.Rapor.Sum(r => r.CalisilanGunSayisi) / Model.Rapor.Count;
+                                var kisiBasiIzin = (double)Model.Rapor.Sum(r => r.YillikIzinGunSayisi + r.MazeretIzniGunSayisi + r.UcretsizIzinGunSayisi) / Model.Rapor.Count;
+                                var kisiBasiMesai = (double)Model.Rapor.Sum(r => r.ToplamMesaiSaati) / Model.Rapor.Count;
+                            }
+                            <ul class="list-unstyled mb-0">
+                                <li><strong>Kişi Başı Çalışılan Gün:</strong> @kisiBasiCalisilanGun.ToString("F1") gün</li>
+                                <li><strong>Kişi Başı İzin:</strong> @kisiBasiIzin.ToString("F1") gün</li>
+                                <li><strong>Kişi Başı Mesai:</strong> @kisiBasiMesai.ToString("F1") saat</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-warning">
+                        <div class="card-header bg-warning">
+                            <h6 class="mb-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle-fill me-2" viewBox="0 0 16 16">
+                                    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                                </svg>
+                                Dikkat Edilmesi Gerekenler
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled mb-0">
+                                <li>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-circle-fill text-danger me-1" viewBox="0 0 16 16">
+                                        <circle cx="8" cy="8" r="8"/>
+                                    </svg>
+                                    <strong>Raporlu:</strong> @Model.Rapor.Count(r => r.RaporluGunSayisi > 0) personel
+                                </li>
+                                <li>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-circle-fill text-warning me-1" viewBox="0 0 16 16">
+                                        <circle cx="8" cy="8" r="8"/>
+                                    </svg>
+                                    <strong>Ücretsiz İzin:</strong> @Model.Rapor.Count(r => r.UcretsizIzinGunSayisi > 0) personel
+                                </li>
+                                <li>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-circle-fill text-dark me-1" viewBox="0 0 16 16">
+                                        <circle cx="8" cy="8" r="8"/>
+                                    </svg>
+                                    <strong>Fazla Mesai:</strong> @Model.Rapor.Count(r => r.FazlaMesaiGunSayisi > 0) personel
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+<style>
+    @@media print {
+        .btn, .card-header h6, nav, footer, form {
+            display: none !important;
+        }
+        
+        .card {
+            border: 1px solid #dee2e6 !important;
+            box-shadow: none !important;
+        }
+        
+        body {
+            font-size: 11pt;
+        }
+        
+        table {
+            font-size: 10pt;
+        }
+    }
+</style>
+

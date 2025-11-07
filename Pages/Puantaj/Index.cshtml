@@ -1,0 +1,260 @@
+@page
+@model LoyalKullaniciTakip.Pages.Puantaj.IndexModel
+@{
+    ViewData["Title"] = "Puantaj Yönetimi";
+    var aydakiGunSayisi = Model.PuantajData.Ay > 0 ? DateTime.DaysInMonth(Model.PuantajData.Yil, Model.PuantajData.Ay) : 31;
+}
+
+<h1>Puantaj Yönetimi</h1>
+
+<hr />
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<!-- Ay/Yıl Seçimi -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="post">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label asp-for="SecilenAy" class="form-label">Ay</label>
+                    <select asp-for="SecilenAy" class="form-select">
+                        <option value="1">Ocak</option>
+                        <option value="2">Şubat</option>
+                        <option value="3">Mart</option>
+                        <option value="4">Nisan</option>
+                        <option value="5">Mayıs</option>
+                        <option value="6">Haziran</option>
+                        <option value="7">Temmuz</option>
+                        <option value="8">Ağustos</option>
+                        <option value="9">Eylül</option>
+                        <option value="10">Ekim</option>
+                        <option value="11">Kasım</option>
+                        <option value="12">Aralık</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="SecilenYil" class="form-label">Yıl</label>
+                    <input asp-for="SecilenYil" type="number" class="form-control" min="2020" max="2100" />
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary">Puantaj Getir</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (Model.PuantajData.PersonelSatirlari.Any())
+{
+    <div class="alert alert-info">
+        <strong>Bilgi:</strong> Dropdownlardan durumları seçin, mesai saatlerini girin ve "Tümünü Kaydet" butonuna basın.
+        İzin onayları otomatik olarak puantaja işlenmiştir.
+    </div>
+
+    <!-- Puantaj Grid -->
+    <div class="table-responsive">
+        <form method="post" asp-page-handler="SaveGrid">
+            <input type="hidden" name="SecilenAy" value="@Model.SecilenAy" />
+            <input type="hidden" name="SecilenYil" value="@Model.SecilenYil" />
+
+            <table class="table table-bordered table-sm" style="font-size: 0.85rem;">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="position: sticky; left: 0; z-index: 10; background: #212529;" class="text-white">Personel</th>
+                        @for (int gun = 1; gun <= aydakiGunSayisi; gun++)
+                        {
+                            var tarih = new DateTime(Model.PuantajData.Yil, Model.PuantajData.Ay, gun);
+                            var gunAdi = tarih.ToString("ddd", new System.Globalization.CultureInfo("tr-TR"));
+                            var weekendClass = tarih.DayOfWeek == DayOfWeek.Saturday || tarih.DayOfWeek == DayOfWeek.Sunday ? "table-secondary" : "";
+                            
+                            <th class="text-center @weekendClass" style="min-width: 90px;">
+                                <div>@gun</div>
+                                <small class="text-muted">@gunAdi</small>
+                            </th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        var kayitIndex = 0;
+                    }
+                    @foreach (var personel in Model.PuantajData.PersonelSatirlari)
+                    {
+                        <tr>
+                            <td style="position: sticky; left: 0; z-index: 5; background: white; font-weight: 500;">
+                                @personel.PersonelAdSoyad
+                            </td>
+                            @for (int gun = 1; gun <= aydakiGunSayisi; gun++)
+                            {
+                                var tarih = new DateTime(Model.PuantajData.Yil, Model.PuantajData.Ay, gun);
+                                var weekendClass = tarih.DayOfWeek == DayOfWeek.Saturday || tarih.DayOfWeek == DayOfWeek.Sunday ? "table-secondary" : "";
+                                var kayit = personel.GunlukKayitlar.ContainsKey(gun) ? personel.GunlukKayitlar[gun] : null;
+                                var secilenDurumId = kayit?.PuantajDurumID ?? 0;
+                                var mesaiSaati = kayit?.MesaiSaati;
+
+                                <td class="text-center p-1 @weekendClass">
+                                    <input type="hidden" name="puantajKayitlari[@kayitIndex].PersonelID" value="@personel.PersonelID" />
+                                    <input type="hidden" name="puantajKayitlari[@kayitIndex].Ay" value="@Model.PuantajData.Ay" />
+                                    <input type="hidden" name="puantajKayitlari[@kayitIndex].Yil" value="@Model.PuantajData.Yil" />
+                                    <input type="hidden" name="puantajKayitlari[@kayitIndex].Gun" value="@gun" />
+
+                                    <select name="puantajKayitlari[@kayitIndex].PuantajDurumID"
+                                            id="durum_@kayitIndex"
+                                            class="form-select form-select-sm mb-1 puantaj-durum-select"
+                                            data-index="@kayitIndex"
+                                            style="font-size: 0.75rem; padding: 0.25rem;">
+                                        <option value="0">-</option>
+                                        @foreach (var durum in Model.PuantajDurumlari)
+                                        {
+                                            <option value="@durum.PuantajDurumID"
+                                                    data-kod="@durum.Kod"
+                                                    selected="@(secilenDurumId == durum.PuantajDurumID ? "selected" : null)"
+                                                    title="@durum.Tanim">
+                                                @durum.Kod
+                                            </option>
+                                        }
+                                    </select>
+
+                                    <input type="number"
+                                           name="puantajKayitlari[@kayitIndex].MesaiSaati"
+                                           id="mesai_@kayitIndex"
+                                           class="form-control form-control-sm mesai-saati-input"
+                                           style="font-size: 0.75rem; padding: 0.25rem;"
+                                           placeholder="Saat"
+                                           step="0.5"
+                                           min="0"
+                                           max="24"
+                                           value="@(mesaiSaati?.ToString(System.Globalization.CultureInfo.InvariantCulture))" />
+
+                                    @if (kayit != null && !string.IsNullOrEmpty(kayit.Aciklama))
+                                    {
+                                        <small class="text-muted" title="@kayit.Aciklama">ℹ️</small>
+                                    }
+                                    @{
+                                        kayitIndex++;
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="mt-3 mb-4">
+                <button type="submit" class="btn btn-success btn-lg">
+                    <i class="bi bi-save"></i> Tümünü Kaydet
+                </button>
+                <a asp-page="/Personel/Index" class="btn btn-secondary btn-lg">Personel Listesine Dön</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Puantaj Durumları Açıklaması -->
+    <div class="card mt-3">
+        <div class="card-header">
+            <strong>Puantaj Durum Kodları</strong>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                @foreach (var durum in Model.PuantajDurumlari)
+                {
+                    <div class="col-md-3 mb-2">
+                        <span class="badge bg-primary">@durum.Kod</span> - @durum.Tanim
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+else if (Model.PuantajData.Ay > 0)
+{
+    <div class="alert alert-warning">
+        Seçilen ay için puantaj verisi bulunamadı. Lütfen önce personel ekleyin.
+    </div>
+}
+else
+{
+    <div class="alert alert-info">
+        Puantaj görüntülemek için yukarıdan ay ve yıl seçip "Puantaj Getir" butonuna basın.
+    </div>
+}
+
+<style>
+    /* Grid için özel stiller */
+    .table-responsive {
+        max-height: 600px;
+        overflow-y: auto;
+    }
+
+    .table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+    }
+
+    /* Mobil uyumluluk */
+    @@media (max-width: 768px) {
+        .table {
+            font-size: 0.7rem;
+        }
+        .table td, .table th {
+            padding: 0.25rem;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Tüm puantaj durum select'lerini bul
+        const durumSelects = document.querySelectorAll('.puantaj-durum-select');
+
+        // Günlük çalışma saati (Genel Ayarlar'dan alınıyor)
+        const gunlukCalismaSaati = @Model.GunlukCalismaSaati;
+
+        // Otomatik mesai saati eklenecek durum kodları
+        const mesaiEklenenDurumlari = ['Ç', 'P', 'FM', 'Gİ', 'Yİ'];
+
+        // Her select için kontrol fonksiyonu
+        function setDefaultMesaiSaati(selectElement) {
+            const index = selectElement.dataset.index;
+            const mesaiInput = document.getElementById('mesai_' + index);
+            const selectedOption = selectElement.options[selectElement.selectedIndex];
+            const kod = selectedOption.getAttribute('data-kod');
+
+            // Eğer input boşsa veya sıfırsa VE belirtilen durumlardan biriyse günlük çalışma saatini ekle
+            const mevcutDeger = mesaiInput.value ? parseFloat(mesaiInput.value) : 0;
+            if (mesaiEklenenDurumlari.includes(kod) && mevcutDeger === 0) {
+                mesaiInput.value = gunlukCalismaSaati;
+            }
+        }
+
+        // Sayfa yüklendiğinde mevcut durumları kontrol et - SADECE change event'te çalışsın
+        // Sayfa yüklendiğinde veritabanından gelen değerleri korumak için bu satırı kaldırıyoruz
+        // durumSelects.forEach(function(select) {
+        //     setDefaultMesaiSaati(select);
+        // });
+
+        // Change event listener ekle
+        durumSelects.forEach(function(select) {
+            select.addEventListener('change', function() {
+                setDefaultMesaiSaati(this);
+            });
+        });
+    });
+</script>
+

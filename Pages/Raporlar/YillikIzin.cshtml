@@ -1,0 +1,245 @@
+@page
+@model LoyalKullaniciTakip.Pages.Raporlar.YillikIzinModel
+@{
+    ViewData["Title"] = "Yıllık İzin Raporu";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-6">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-file-earmark-bar-graph me-2" viewBox="0 0 16 16">
+                    <path d="M10 13.5a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-6a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5zm-2.5.5a.5.5 0 0 1-.5-.5v-4a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5zm-3 0a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5z"/>
+                    <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/>
+                </svg>
+                Yıllık İzin Raporu
+            </h1>
+            <p class="text-muted">Personellerin yıllık izin kullanım durumları</p>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-success" onclick="window.print()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer me-1" viewBox="0 0 16 16">
+                    <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
+                    <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1"/>
+                </svg>
+                Yazdır
+            </button>
+            <a href="/" class="btn btn-outline-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house me-1" viewBox="0 0 16 16">
+                    <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/>
+                </svg>
+                Ana Sayfa
+            </a>
+        </div>
+    </div>
+
+    <!-- Özet Kartlar -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-white-50">Toplam Personel</h6>
+                    <h2 class="mb-0">@Model.Rapor.Count</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-white-50">Toplam Hakedilen</h6>
+                    <h2 class="mb-0">@Model.Rapor.Sum(r => r.HakedilenToplamIzin) <small class="fs-6">gün</small></h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2">Toplam Kullanılan</h6>
+                    <h2 class="mb-0">@Model.Rapor.Sum(r => r.KullanilanIzin) <small class="fs-6">gün</small></h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-white-50">Toplam Kalan</h6>
+                    <h2 class="mb-0">@Model.Rapor.Sum(r => r.KalanIzin) <small class="fs-6">gün</small></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rapor Tablosu -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">Detaylı Rapor</h5>
+            <small class="text-muted">Rapor Tarihi: @DateTime.Today.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("tr-TR"))</small>
+        </div>
+        <div class="card-body p-0">
+            @if (Model.Rapor.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Personel Ad Soyad</th>
+                                <th>İşe Giriş Tarihi</th>
+                                <th class="text-center">Kıdem (Yıl)</th>
+                                <th class="text-center">Hakedilen İzin</th>
+                                <th class="text-center">Kullanılan İzin</th>
+                                <th class="text-center">Kalan İzin</th>
+                                <th class="text-center">Durum</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var rapor in Model.Rapor)
+                            {
+                                var kullanımOrani = rapor.HakedilenToplamIzin > 0 
+                                    ? (rapor.KullanilanIzin * 100.0 / rapor.HakedilenToplamIzin) 
+                                    : 0;
+                                
+                                var durumClass = rapor.KalanIzin < 0 ? "table-danger" : 
+                                                rapor.KalanIzin == 0 ? "table-warning" : 
+                                                kullanımOrani > 80 ? "table-warning" : "";
+                                
+                                <tr class="@durumClass">
+                                    <td>
+                                        <strong>@rapor.PersonelAdSoyad</strong>
+                                    </td>
+                                    <td>@rapor.IseGirisTarihi.ToString("dd.MM.yyyy")</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-secondary">@rapor.KidemYili yıl</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <strong>@rapor.HakedilenToplamIzin</strong> gün
+                                    </td>
+                                    <td class="text-center">
+                                        <strong class="text-primary">@rapor.KullanilanIzin</strong> gün
+                                    </td>
+                                    <td class="text-center">
+                                        <strong class="@(rapor.KalanIzin < 0 ? "text-danger" : rapor.KalanIzin > 0 ? "text-success" : "text-warning")">
+                                            @rapor.KalanIzin
+                                        </strong> gün
+                                    </td>
+                                    <td class="text-center">
+                                        @if (rapor.KalanIzin < 0)
+                                        {
+                                            <span class="badge bg-danger" title="İzin hakkını aştı">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-exclamation-triangle-fill me-1" viewBox="0 0 16 16">
+                                                    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                                                </svg>
+                                                Limit Aşıldı
+                                            </span>
+                                        }
+                                        else if (rapor.KalanIzin == 0)
+                                        {
+                                            <span class="badge bg-warning text-dark">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-check-circle-fill me-1" viewBox="0 0 16 16">
+                                                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                                                </svg>
+                                                Tamamlandı
+                                            </span>
+                                        }
+                                        else if (kullanımOrani > 80)
+                                        {
+                                            <span class="badge bg-warning text-dark">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-clock me-1" viewBox="0 0 16 16">
+                                                    <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z"/>
+                                                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/>
+                                                </svg>
+                                                @kullanımOrani.ToString("F0")% Kullanıldı
+                                            </span>
+                                        }
+                                        else if (rapor.KullanilanIzin > 0)
+                                        {
+                                            <span class="badge bg-success">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-graph-up-arrow me-1" viewBox="0 0 16 16">
+                                                    <path fill-rule="evenodd" d="M0 0h1v15h15v1H0zm10 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V4.9l-3.613 4.417a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61L13.445 4H10.5a.5.5 0 0 1-.5-.5"/>
+                                                </svg>
+                                                @kullanımOrani.ToString("F0")% Kullanıldı
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Kullanılmadı</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot class="table-light fw-bold">
+                            <tr>
+                                <td colspan="3" class="text-end">TOPLAM:</td>
+                                <td class="text-center">@Model.Rapor.Sum(r => r.HakedilenToplamIzin) gün</td>
+                                <td class="text-center text-primary">@Model.Rapor.Sum(r => r.KullanilanIzin) gün</td>
+                                <td class="text-center @(Model.Rapor.Sum(r => r.KalanIzin) < 0 ? "text-danger" : "text-success")">
+                                    @Model.Rapor.Sum(r => r.KalanIzin) gün
+                                </td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center text-muted py-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+                        <path d="M4.98 4a.5.5 0 0 0-.39.188L1.54 8H6a.5.5 0 0 1 .5.5 1.5 1.5 0 1 0 3 0A.5.5 0 0 1 10 8h4.46l-3.05-3.812A.5.5 0 0 0 11.02 4zm9.954 5H10.45a2.5 2.5 0 0 1-4.9 0H1.066l.32 2.562a.5.5 0 0 0 .497.438h12.234a.5.5 0 0 0 .496-.438zM3.809 3.563A1.5 1.5 0 0 1 4.981 3h6.038a1.5 1.5 0 0 1 1.172.563l3.7 4.625a.5.5 0 0 1 .105.374l-.39 3.124A1.5 1.5 0 0 1 14.117 13H1.883a1.5 1.5 0 0 1-1.489-1.314l-.39-3.124a.5.5 0 0 1 .106-.374z"/>
+                    </svg>
+                    <p>Henüz personel kaydı bulunmuyor</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Açıklama Notları -->
+    <div class="card mt-4 border-info">
+        <div class="card-header bg-info text-white">
+            <h6 class="mb-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle-fill me-2" viewBox="0 0 16 16">
+                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
+                </svg>
+                İzin Hesaplama Kuralları
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Hakedilen İzin Günleri (İş Kanunu):</h6>
+                    <ul class="mb-0">
+                        <li><strong>1-5 yıl arası kıdem:</strong> 14 gün</li>
+                        <li><strong>5-15 yıl arası kıdem:</strong> 20 gün</li>
+                        <li><strong>15 yıl ve üzeri kıdem:</strong> 26 gün</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6>Kullanılan İzin Hesabı:</h6>
+                    <ul class="mb-0">
+                        <li>Sadece <strong>onaylanmış</strong> izin talepleri dahildir</li>
+                        <li>Sadece <strong>yıllık izinden düşen</strong> izin tipleri sayılır</li>
+                        <li>Mazeret izinleri ve raporlu izinler bu hesaba dahil edilmez</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @@media print {
+        .btn, .card-header h6, nav, footer {
+            display: none !important;
+        }
+        
+        .card {
+            border: 1px solid #dee2e6 !important;
+            box-shadow: none !important;
+        }
+        
+        body {
+            font-size: 12pt;
+        }
+    }
+</style>
+

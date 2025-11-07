@@ -1,0 +1,59 @@
+@page "{egitimId:int}"
+@model LoyalKullaniciTakip.Pages.Egitim.EditModel
+@{
+    ViewData["Title"] = "Eğitim Düzenle";
+}
+
+<h1>Eğitim Düzenle</h1>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="Seviye" class="form-label"></label>
+                <select asp-for="Seviye" class="form-select">
+                    <option value="">Seçiniz...</option>
+                    <option value="İlkokul">İlkokul</option>
+                    <option value="Ortaokul">Ortaokul</option>
+                    <option value="Lise">Lise</option>
+                    <option value="Ön Lisans">Ön Lisans</option>
+                    <option value="Lisans">Lisans</option>
+                    <option value="Yüksek Lisans">Yüksek Lisans</option>
+                    <option value="Doktora">Doktora</option>
+                </select>
+                <span asp-validation-for="Seviye" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="OkulAdi" class="form-label"></label>
+                <input asp-for="OkulAdi" class="form-control" />
+                <span asp-validation-for="OkulAdi" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Bolum" class="form-label"></label>
+                <input asp-for="Bolum" class="form-control" />
+                <span asp-validation-for="Bolum" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="MezuniyetYili" class="form-label"></label>
+                <input asp-for="MezuniyetYili" class="form-control" type="number" />
+                <span asp-validation-for="MezuniyetYili" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary">Güncelle</button>
+                <a asp-page="/Personel/Details" asp-route-id="@Model.PersonelID" class="btn btn-secondary">İptal</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

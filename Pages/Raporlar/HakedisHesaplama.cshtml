@@ -1,0 +1,313 @@
+@page
+@model LoyalKullaniciTakip.Pages.Raporlar.HakedisHesaplamaModel
+@{
+    ViewData["Title"] = "Hakedis Hesaplama";
+    var turkishCulture = new System.Globalization.CultureInfo("tr-TR");
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-6">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-calculator me-2" viewBox="0 0 16 16">
+                    <path d="M12 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM4 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/>
+                    <path d="M4 2.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5zm0 4a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3-6a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3-6a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5z"/>
+                </svg>
+                Hakedis Hesaplama Raporu
+            </h1>
+            <p class="text-muted">Aylık bordro hakedişlerini hesaplayın</p>
+        </div>
+        <div class="col-auto">
+            @if (Model.RaporGosterilsin)
+            {
+                <button class="btn btn-success" onclick="window.print()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer me-1" viewBox="0 0 16 16">
+                        <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
+                        <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1"/>
+                    </svg>
+                    Yazdır
+                </button>
+            }
+            <a href="/" class="btn btn-outline-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house me-1" viewBox="0 0 16 16">
+                    <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/>
+                </svg>
+                Ana Sayfa
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>Başarılı!</strong> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Hata!</strong> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Filtre Formu -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-funnel me-2" viewBox="0 0 16 16">
+                    <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2z"/>
+                </svg>
+                Rapor Filtresi
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label asp-for="SecilenAy" class="form-label">Ay</label>
+                        <select asp-for="SecilenAy" asp-items="Model.AyListesi" class="form-select">
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="SecilenYil" class="form-label">Yıl</label>
+                        <select asp-for="SecilenYil" asp-items="Model.YilListesi" class="form-select">
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calculator me-1" viewBox="0 0 16 16">
+                                <path d="M12 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM4 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/>
+                                <path d="M4 2.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5zm0 4a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3-6a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3-6a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5z"/>
+                            </svg>
+                            Hesapla
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Rapor Sonuçları -->
+    @if (Model.RaporGosterilsin)
+    {
+        var ayAdi = turkishCulture.DateTimeFormat.GetMonthName(Model.SecilenAy);
+
+        <!-- Özet Kartlar -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-white-50">Personel Sayısı</h6>
+                        <h2 class="mb-0">@Model.HakedisRaporu.Count</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-white-50">Toplam Brüt Maaş</h6>
+                        <h2 class="mb-0">@Model.HakedisRaporu.Sum(h => h.BrutMaas).ToString("N2") ₺</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-danger text-white shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-white-50">Toplam Kesinti</h6>
+                        <h2 class="mb-0">@Model.HakedisRaporu.Sum(h => h.KesintiTutari).ToString("N2") ₺</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-white-50">Toplam Net Hakedis</h6>
+                        <h2 class="mb-0">@Model.HakedisRaporu.Sum(h => h.NetHakedis).ToString("N2") ₺</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detaylı Rapor Tablosu -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    @ayAdi @Model.SecilenYil Hakedis Hesaplama Detayı
+                </h5>
+                <small class="text-muted">Rapor Tarihi: @DateTime.Today.ToString("dd MMMM yyyy", turkishCulture)</small>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.HakedisRaporu.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Personel Ad Soyad</th>
+                                    <th class="text-end">Brüt Maaş</th>
+                                    <th class="text-center">Çalışılan</th>
+                                    <th class="text-center">Raporlu</th>
+                                    <th class="text-center">Ücretsiz İzin</th>
+                                    <th class="text-center">Kesinti Günü</th>
+                                    <th class="text-end">Kesinti Tutarı</th>
+                                    <th class="text-end">Net Hakedis</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var hakedis in Model.HakedisRaporu)
+                                {
+                                    <tr>
+                                        <td><strong>@hakedis.PersonelAdSoyad</strong></td>
+                                        <td class="text-end">@hakedis.BrutMaas.ToString("N2") ₺</td>
+                                        <td class="text-center">
+                                            <span class="badge bg-success">@hakedis.PuantajOzet.CalisilanGunSayisi</span>
+                                        </td>
+                                        <td class="text-center">
+                                            @if (hakedis.PuantajOzet.RaporluGunSayisi > 0)
+                                            {
+                                                <span class="badge bg-danger">@hakedis.PuantajOzet.RaporluGunSayisi</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            @if (hakedis.PuantajOzet.UcretsizIzinGunSayisi > 0)
+                                            {
+                                                <span class="badge bg-warning text-dark">@hakedis.PuantajOzet.UcretsizIzinGunSayisi</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            @if (hakedis.ToplamKesintiGunu > 0)
+                                            {
+                                                <span class="badge bg-dark">@hakedis.ToplamKesintiGunu</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td class="text-end text-danger">
+                                            @if (hakedis.KesintiTutari > 0)
+                                            {
+                                                <strong>-@hakedis.KesintiTutari.ToString("N2") ₺</strong>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td class="text-end text-success">
+                                            <strong>@hakedis.NetHakedis.ToString("N2") ₺</strong>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot class="table-light fw-bold">
+                                <tr>
+                                    <td>TOPLAM:</td>
+                                    <td class="text-end">@Model.HakedisRaporu.Sum(h => h.BrutMaas).ToString("N2") ₺</td>
+                                    <td class="text-center">@Model.HakedisRaporu.Sum(h => h.PuantajOzet.CalisilanGunSayisi)</td>
+                                    <td class="text-center text-danger">@Model.HakedisRaporu.Sum(h => h.PuantajOzet.RaporluGunSayisi)</td>
+                                    <td class="text-center text-warning">@Model.HakedisRaporu.Sum(h => h.PuantajOzet.UcretsizIzinGunSayisi)</td>
+                                    <td class="text-center">@Model.HakedisRaporu.Sum(h => h.ToplamKesintiGunu)</td>
+                                    <td class="text-end text-danger">-@Model.HakedisRaporu.Sum(h => h.KesintiTutari).ToString("N2") ₺</td>
+                                    <td class="text-end text-success">@Model.HakedisRaporu.Sum(h => h.NetHakedis).ToString("N2") ₺</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center text-muted py-5">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
+                            <path d="M4.98 4a.5.5 0 0 0-.39.188L1.54 8H6a.5.5 0 0 1 .5.5 1.5 1.5 0 1 0 3 0A.5.5 0 0 1 10 8h4.46l-3.05-3.812A.5.5 0 0 0 11.02 4zm9.954 5H10.45a2.5 2.5 0 0 1-4.9 0H1.066l.32 2.562a.5.5 0 0 0 .497.438h12.234a.5.5 0 0 0 .496-.438zM3.809 3.563A1.5 1.5 0 0 1 4.981 3h6.038a1.5 1.5 0 0 1 1.172.563l3.7 4.625a.5.5 0 0 1 .105.374l-.39 3.124A1.5 1.5 0 0 1 14.117 13H1.883a1.5 1.5 0 0 1-1.489-1.314l-.39-3.124a.5.5 0 0 1 .106-.374z"/>
+                        </svg>
+                        <p>Seçilen ay için puantaj kaydı bulunamadı</p>
+                        <small>Lütfen puantaj girişi yapın veya farklı bir ay seçin.</small>
+                    </div>
+                }
+            </div>
+        </div>
+
+        @if (Model.HakedisRaporu.Any())
+        {
+            <!-- Ayı Kapat ve Kaydet Butonu -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-body text-center">
+                    <h5 class="card-title mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-lock-fill me-2" viewBox="0 0 16 16">
+                            <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2m3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2"/>
+                        </svg>
+                        Ayı Kapat
+                    </h5>
+                    <p class="text-muted mb-3">
+                        Hesaplanan hakedişleri kaydetmek ve ayı kapatmak için aşağıdaki butona tıklayın.
+                        <br />
+                        <small>Not: Bu işlem geri alınamaz. Aynı ay için tekrar hesaplama yaparsanız kayıtlar güncellenecektir.</small>
+                    </p>
+                    <form method="post" asp-page-handler="SaveHakedis" onsubmit="return confirm('@turkishCulture.DateTimeFormat.GetMonthName(Model.SecilenAy) @Model.SecilenYil ayını kapatmak ve hakedişleri kaydetmek istediğinizden emin misiniz?');">
+                        <input type="hidden" asp-for="SecilenAy" />
+                        <input type="hidden" asp-for="SecilenYil" />
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-save me-2" viewBox="0 0 16 16">
+                                <path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1z"/>
+                            </svg>
+                            Ayı Kapat ve Hakedişleri Kaydet
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Bilgilendirme -->
+            <div class="alert alert-info mt-4" role="alert">
+                <h5 class="alert-heading">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-info-circle me-2" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                        <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533z"/>
+                        <circle cx="8" cy="4.5" r="1"/>
+                    </svg>
+                    Hesaplama Notları
+                </h5>
+                <ul class="mb-0">
+                    <li><strong>Günlük Maaş:</strong> Brüt Maaş / 30 gün</li>
+                    <li><strong>Kesinti Günü:</strong> Raporlu + Ücretsiz İzin günleri</li>
+                    <li><strong>Kesinti Tutarı:</strong> Kesinti Günü × Günlük Maaş</li>
+                    <li><strong>Net Hakedis:</strong> Brüt Maaş - Kesinti Tutarı</li>
+                    <li class="text-muted"><small>Not: Raporlu günler için ilk 2 gün kesinti yapılmaz kuralı bu basitleştirilmiş versiyonda uygulanmamıştır.</small></li>
+                </ul>
+            </div>
+        }
+    }
+</div>
+
+<style>
+    @@media print {
+        .btn, .card-header h5, nav, footer, form {
+            display: none !important;
+        }
+
+        .card {
+            border: 1px solid #dee2e6 !important;
+            box-shadow: none !important;
+        }
+
+        body {
+            font-size: 11pt;
+        }
+
+        table {
+            font-size: 10pt;
+        }
+    }
+</style>
+

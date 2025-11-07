@@ -1,0 +1,201 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using LoyalKullaniciTakip.Data;
+using LoyalKullaniciTakip.Data.Lookups;
+
+namespace LoyalKullaniciTakip.Pages.Puantaj
+{
+    public class IndexModel : PageModel
+    {
+        private readonly ApplicationDbContext _context;
+
+        public IndexModel(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        [BindProperty]
+        public int SecilenAy { get; set; } = DateTime.Now.Month;
+
+        [BindProperty]
+        public int SecilenYil { get; set; } = DateTime.Now.Year;
+
+        public PuantajViewModel PuantajData { get; set; } = new PuantajViewModel();
+        public List<Lookup_PuantajDurumlari> PuantajDurumlari { get; set; } = new List<Lookup_PuantajDurumlari>();
+        
+        // Günlük çalışma saati ayarı
+        public decimal GunlukCalismaSaati { get; set; } = 8;
+
+        public async Task OnGetAsync()
+        {
+            await LoadPuantajDurumlariAsync();
+            await LoadGunlukCalismaSaatiAsync();
+        }
+
+        public async Task<IActionResult> OnPostAsync()
+        {
+            await LoadPuantajDurumlariAsync();
+            await LoadGunlukCalismaSaatiAsync();
+
+            // Seçilen ay/yıl için puantaj verisini yükle
+            PuantajData = await LoadPuantajDataAsync(SecilenAy, SecilenYil);
+
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostSaveGridAsync(List<PuantajKayitDto> puantajKayitlari, int SecilenAy, int SecilenYil)
+        {
+            if (puantajKayitlari == null || !puantajKayitlari.Any())
+            {
+                TempData["ErrorMessage"] = "Kaydedilecek veri bulunamadı.";
+                return RedirectToPage();
+            }
+
+            using (var transaction = await _context.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    var kaydedilenSayisi = 0;
+                    foreach (var kayit in puantajKayitlari)
+                    {
+                        // Boş durumları atla
+                        if (kayit.PuantajDurumID == 0)
+                            continue;
+
+                        var tarih = new DateTime(kayit.Yil, kayit.Ay, kayit.Gun);
+
+                        // UPSERT: Mevcut kaydı bul
+                        var mevcutKayit = await _context.PuantajGunluk
+                            .FirstOrDefaultAsync(p => p.PersonelID == kayit.PersonelID && p.Tarih == tarih);
+
+                        if (mevcutKayit == null)
+                        {
+                            // Yeni kayıt ekle
+                            var yeniKayit = new PuantajGunluk
+                            {
+                                PersonelID = kayit.PersonelID,
+                                Tarih = tarih,
+                                PuantajDurumID = kayit.PuantajDurumID,
+                                MesaiSaati = kayit.MesaiSaati,
+                                Aciklama = "Manuel girdi"
+                            };
+                            await _context.PuantajGunluk.AddAsync(yeniKayit);
+                            kaydedilenSayisi++;
+                        }
+                        else
+                        {
+                            // Mevcut kaydı güncelle
+                            mevcutKayit.PuantajDurumID = kayit.PuantajDurumID;
+                            mevcutKayit.MesaiSaati = kayit.MesaiSaati;
+                            mevcutKayit.Aciklama = "Manuel güncelleme";
+                            kaydedilenSayisi++;
+                        }
+                    }
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    TempData["SuccessMessage"] = $"Puantaj kayıtları başarıyla kaydedildi. ({kaydedilenSayisi} kayıt)";
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    TempData["ErrorMessage"] = $"Kayıt sırasında hata oluştu: {ex.Message} - InnerException: {ex.InnerException?.Message}";
+                }
+            }
+
+            return RedirectToPage(new { handler = "", ay = SecilenAy, yil = SecilenYil });
+        }
+
+        private async Task<PuantajViewModel> LoadPuantajDataAsync(int ay, int yil)
+        {
+            var viewModel = new PuantajViewModel
+            {
+                Ay = ay,
+                Yil = yil
+            };
+
+            // a. Tüm aktif personelleri yükle
+            var personeller = await _context.Personeller
+                .OrderBy(p => p.Ad)
+                .ThenBy(p => p.Soyad)
+                .Select(p => new { p.PersonelID, AdSoyad = p.Ad + " " + p.Soyad })
+                .ToListAsync();
+
+            // b. Seçilen aydaki tüm puantaj kayıtlarını tek sorguda yükle
+            var ayinIlkGunu = new DateTime(yil, ay, 1);
+            var ayinSonGunu = ayinIlkGunu.AddMonths(1).AddDays(-1);
+
+            var puantajKayitlari = await _context.PuantajGunluk
+                .Include(p => p.PuantajDurum)
+                .Where(p => p.Tarih >= ayinIlkGunu && p.Tarih <= ayinSonGunu)
+                .ToListAsync();
+
+            // c. ViewModel'i doldur
+            var aydakiGunSayisi = DateTime.DaysInMonth(yil, ay);
+
+            foreach (var personel in personeller)
+            {
+                var satir = new PersonelPuantajSatiri
+                {
+                    PersonelID = personel.PersonelID,
+                    PersonelAdSoyad = personel.AdSoyad
+                };
+
+                // Her gün için kayıt oluştur
+                for (int gun = 1; gun <= aydakiGunSayisi; gun++)
+                {
+                    var tarih = new DateTime(yil, ay, gun);
+                    var gunlukKayit = puantajKayitlari
+                        .FirstOrDefault(p => p.PersonelID == personel.PersonelID && p.Tarih == tarih);
+
+                    satir.GunlukKayitlar[gun] = gunlukKayit;
+                }
+
+                viewModel.PersonelSatirlari.Add(satir);
+            }
+
+            return viewModel;
+        }
+
+        private async Task LoadPuantajDurumlariAsync()
+        {
+            PuantajDurumlari = await _context.Lookup_PuantajDurumlari
+                .OrderBy(p => p.Kod)
+                .ToListAsync();
+        }
+
+        private async Task LoadGunlukCalismaSaatiAsync()
+        {
+            var ayar = await _context.Lookup_GenelAyarlar
+                .FirstOrDefaultAsync(g => g.AyarKey == "GunlukCalismaSaati");
+
+            if (ayar != null && decimal.TryParse(ayar.AyarValue, 
+                System.Globalization.NumberStyles.Any, 
+                System.Globalization.CultureInfo.InvariantCulture, 
+                out decimal saatDegeri))
+            {
+                GunlukCalismaSaati = saatDegeri;
+            }
+            else
+            {
+                // Varsayılan değer 8 saat
+                GunlukCalismaSaati = 8;
+            }
+        }
+    }
+
+    // DTO for form submission
+    public class PuantajKayitDto
+    {
+        public int PersonelID { get; set; }
+        public int Ay { get; set; }
+        public int Yil { get; set; }
+        public int Gun { get; set; }
+        public int PuantajDurumID { get; set; }
+        public decimal? MesaiSaati { get; set; }
+    }
+}
+

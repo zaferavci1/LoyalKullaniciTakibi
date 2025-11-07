@@ -1,0 +1,34 @@
+@page "{egitimId:int}"
+@model LoyalKullaniciTakip.Pages.Egitim.DeleteModel
+@{
+    ViewData["Title"] = "Eğitim Sil";
+}
+
+<h1>Eğitim Sil</h1>
+
+<h3>Bu eğitim kaydını silmek istediğinizden emin misiniz?</h3>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+        <dl class="row">
+            <dt class="col-sm-4">Seviye</dt>
+            <dd class="col-sm-8">@Model.Egitim.Seviye</dd>
+
+            <dt class="col-sm-4">Okul Adı</dt>
+            <dd class="col-sm-8">@Model.Egitim.OkulAdi</dd>
+
+            <dt class="col-sm-4">Bölüm</dt>
+            <dd class="col-sm-8">@Model.Egitim.Bolum</dd>
+
+            <dt class="col-sm-4">Mezuniyet Yılı</dt>
+            <dd class="col-sm-8">@Model.Egitim.MezuniyetYili</dd>
+        </dl>
+
+        <form method="post">
+            <button type="submit" class="btn btn-danger">Sil</button>
+            <a asp-page="/Personel/Details" asp-route-id="@Model.Egitim.PersonelID" class="btn btn-secondary">İptal</a>
+        </form>
+    </div>
+</div>
