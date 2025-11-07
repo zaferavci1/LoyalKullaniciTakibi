@@ -35,6 +35,9 @@ namespace LoyalKullaniciTakip.Pages.Personel
         {
             var personel = await _context.Personeller
                 .Include(p => p.Personel_Detay_SGK)
+                    .ThenInclude(sgk => sgk!.CalismaTipi)
+                .Include(p => p.Personel_Detay_SGK)
+                    .ThenInclude(sgk => sgk!.MeslekKodu)
                 .Include(p => p.Personel_Detay_Muhasebe)
                 .Include(p => p.Departman)
                 .Include(p => p.Meslek)

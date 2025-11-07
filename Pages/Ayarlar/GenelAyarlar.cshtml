@@ -187,6 +187,178 @@
                     </ul>
                 </div>
             </div>
+
+            <!-- Departman Yönetimi Kartı -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-building"></i> Departman Yönetimi
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Add New Department Form -->
+                    <form method="post" asp-page-handler="AddDepartman" class="mb-4">
+                        <div class="row g-2">
+                            <div class="col-md-9">
+                                <input type="text" name="Tanim" class="form-control" placeholder="Yeni departman adı giriniz..." required />
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="bi bi-plus-circle"></i> Ekle
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Department List -->
+                    @if (Model.Departmanlar == null || !Model.Departmanlar.Any())
+                    {
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> Henüz hiç departman tanımlanmamış.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Departman Adı</th>
+                                        <th class="text-center" style="width: 200px;">İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var departman in Model.Departmanlar)
+                                    {
+                                        <tr>
+                                            @if (Model.EditingDepartmanId == departman.DepartmanID)
+                                            {
+                                                <!-- Edit Mode -->
+                                                <form method="post" asp-page-handler="UpdateDepartman" class="d-contents">
+                                                    <input type="hidden" name="id" value="@departman.DepartmanID" />
+                                                    <td>
+                                                        <input type="text" name="Tanim" value="@departman.Tanim" class="form-control form-control-sm" required />
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <button type="submit" class="btn btn-sm btn-success me-1">
+                                                            <i class="bi bi-check-lg"></i> Kaydet
+                                                        </button>
+                                                        <a href="?handler=CancelEditDepartman" class="btn btn-sm btn-secondary">
+                                                            <i class="bi bi-x-lg"></i> İptal
+                                                        </a>
+                                                    </td>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <!-- Display Mode -->
+                                                <td><strong>@departman.Tanim</strong></td>
+                                                <td class="text-center">
+                                                    <a href="?handler=EditDepartman&id=@departman.DepartmanID" class="btn btn-sm btn-warning">
+                                                        <i class="bi bi-pencil"></i> Düzenle
+                                                    </a>
+                                                    <form method="post" asp-page-handler="DeleteDepartman" class="d-inline" onsubmit="return confirm('Bu departmanı silmek istediğinizden emin misiniz?');">
+                                                        <input type="hidden" name="id" value="@departman.DepartmanID" />
+                                                        <button type="submit" class="btn btn-sm btn-danger">
+                                                            <i class="bi bi-trash"></i> Sil
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            }
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Meslek Yönetimi Kartı -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-briefcase"></i> Meslek Yönetimi
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Add New Profession Form -->
+                    <form method="post" asp-page-handler="AddMeslek" class="mb-4">
+                        <div class="row g-2">
+                            <div class="col-md-9">
+                                <input type="text" name="Tanim" class="form-control" placeholder="Yeni meslek adı giriniz..." required />
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="bi bi-plus-circle"></i> Ekle
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Profession List -->
+                    @if (Model.Meslekler == null || !Model.Meslekler.Any())
+                    {
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> Henüz hiç meslek tanımlanmamış.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Meslek Adı</th>
+                                        <th class="text-center" style="width: 200px;">İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var meslek in Model.Meslekler)
+                                    {
+                                        <tr>
+                                            @if (Model.EditingMeslekId == meslek.MeslekID)
+                                            {
+                                                <!-- Edit Mode -->
+                                                <form method="post" asp-page-handler="UpdateMeslek" class="d-contents">
+                                                    <input type="hidden" name="id" value="@meslek.MeslekID" />
+                                                    <td>
+                                                        <input type="text" name="Tanim" value="@meslek.Tanim" class="form-control form-control-sm" required />
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <button type="submit" class="btn btn-sm btn-success me-1">
+                                                            <i class="bi bi-check-lg"></i> Kaydet
+                                                        </button>
+                                                        <a href="?handler=CancelEditMeslek" class="btn btn-sm btn-secondary">
+                                                            <i class="bi bi-x-lg"></i> İptal
+                                                        </a>
+                                                    </td>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <!-- Display Mode -->
+                                                <td><strong>@meslek.Tanim</strong></td>
+                                                <td class="text-center">
+                                                    <a href="?handler=EditMeslek&id=@meslek.MeslekID" class="btn btn-sm btn-warning">
+                                                        <i class="bi bi-pencil"></i> Düzenle
+                                                    </a>
+                                                    <form method="post" asp-page-handler="DeleteMeslek" class="d-inline" onsubmit="return confirm('Bu mesleği silmek istediğinizden emin misiniz?');">
+                                                        <input type="hidden" name="id" value="@meslek.MeslekID" />
+                                                        <button type="submit" class="btn btn-sm btn-danger">
+                                                            <i class="bi bi-trash"></i> Sil
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            }
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
         </div>
     </div>
 </div>

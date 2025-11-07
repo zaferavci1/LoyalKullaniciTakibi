@@ -19,7 +19,11 @@ namespace LoyalKullaniciTakip.Pages.Ayarlar
 
         public List<Lookup_GenelAyarlar> GenelAyarlar { get; set; } = new List<Lookup_GenelAyarlar>();
         public List<Lookup_KidemIzinHakedis> IzinKurallari { get; set; } = new List<Lookup_KidemIzinHakedis>();
+        public List<Lookup_Departmanlar> Departmanlar { get; set; } = new List<Lookup_Departmanlar>();
+        public List<Lookup_Meslekler> Meslekler { get; set; } = new List<Lookup_Meslekler>();
         public int? EditingIzinKuralId { get; set; }
+        public int? EditingDepartmanId { get; set; }
+        public int? EditingMeslekId { get; set; }
 
         [BindProperty]
         public Dictionary<string, string> AyarGuncelleme { get; set; } = new Dictionary<string, string>();
@@ -130,6 +134,226 @@ namespace LoyalKullaniciTakip.Pages.Ayarlar
             return RedirectToPage();
         }
 
+        // Departman Management
+        public async Task<IActionResult> OnPostAddDepartmanAsync(string Tanim)
+        {
+            if (string.IsNullOrWhiteSpace(Tanim))
+            {
+                TempData["ErrorMessage"] = "Departman adı boş olamaz.";
+                return RedirectToPage();
+            }
+
+            var existingDepartman = await _context.Lookup_Departmanlar
+                .FirstOrDefaultAsync(d => d.Tanim == Tanim);
+
+            if (existingDepartman != null)
+            {
+                TempData["ErrorMessage"] = "Bu departman zaten mevcut.";
+                return RedirectToPage();
+            }
+
+            var yeniDepartman = new Lookup_Departmanlar { Tanim = Tanim };
+            _context.Lookup_Departmanlar.Add(yeniDepartman);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Departman başarıyla eklendi.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Departman eklenirken hata oluştu: {ex.Message}";
+            }
+
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostUpdateDepartmanAsync(int id, string Tanim)
+        {
+            if (string.IsNullOrWhiteSpace(Tanim))
+            {
+                TempData["ErrorMessage"] = "Departman adı boş olamaz.";
+                EditingDepartmanId = id;
+                await LoadDataAsync();
+                return Page();
+            }
+
+            var departman = await _context.Lookup_Departmanlar.FindAsync(id);
+            if (departman == null)
+            {
+                TempData["ErrorMessage"] = "Departman bulunamadı.";
+                return RedirectToPage();
+            }
+
+            departman.Tanim = Tanim;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Departman başarıyla güncellendi.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Güncelleme sırasında hata oluştu: {ex.Message}";
+            }
+
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostDeleteDepartmanAsync(int id)
+        {
+            var departman = await _context.Lookup_Departmanlar.FindAsync(id);
+            if (departman == null)
+            {
+                TempData["ErrorMessage"] = "Departman bulunamadı.";
+                return RedirectToPage();
+            }
+
+            // Check if department is in use
+            var inUse = await _context.Personeller.AnyAsync(p => p.DepartmanID == id);
+            if (inUse)
+            {
+                TempData["ErrorMessage"] = "Bu departman kullanımda olduğu için silinemez.";
+                return RedirectToPage();
+            }
+
+            _context.Lookup_Departmanlar.Remove(departman);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Departman başarıyla silindi.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Silme sırasında hata oluştu: {ex.Message}";
+            }
+
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnGetEditDepartmanAsync(int id)
+        {
+            EditingDepartmanId = id;
+            await LoadDataAsync();
+            return Page();
+        }
+
+        public IActionResult OnGetCancelEditDepartman()
+        {
+            return RedirectToPage();
+        }
+
+        // Meslek Management
+        public async Task<IActionResult> OnPostAddMeslekAsync(string Tanim)
+        {
+            if (string.IsNullOrWhiteSpace(Tanim))
+            {
+                TempData["ErrorMessage"] = "Meslek adı boş olamaz.";
+                return RedirectToPage();
+            }
+
+            var existingMeslek = await _context.Lookup_Meslekler
+                .FirstOrDefaultAsync(m => m.Tanim == Tanim);
+
+            if (existingMeslek != null)
+            {
+                TempData["ErrorMessage"] = "Bu meslek zaten mevcut.";
+                return RedirectToPage();
+            }
+
+            var yeniMeslek = new Lookup_Meslekler { Tanim = Tanim };
+            _context.Lookup_Meslekler.Add(yeniMeslek);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Meslek başarıyla eklendi.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Meslek eklenirken hata oluştu: {ex.Message}";
+            }
+
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostUpdateMeslekAsync(int id, string Tanim)
+        {
+            if (string.IsNullOrWhiteSpace(Tanim))
+            {
+                TempData["ErrorMessage"] = "Meslek adı boş olamaz.";
+                EditingMeslekId = id;
+                await LoadDataAsync();
+                return Page();
+            }
+
+            var meslek = await _context.Lookup_Meslekler.FindAsync(id);
+            if (meslek == null)
+            {
+                TempData["ErrorMessage"] = "Meslek bulunamadı.";
+                return RedirectToPage();
+            }
+
+            meslek.Tanim = Tanim;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Meslek başarıyla güncellendi.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Güncelleme sırasında hata oluştu: {ex.Message}";
+            }
+
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostDeleteMeslekAsync(int id)
+        {
+            var meslek = await _context.Lookup_Meslekler.FindAsync(id);
+            if (meslek == null)
+            {
+                TempData["ErrorMessage"] = "Meslek bulunamadı.";
+                return RedirectToPage();
+            }
+
+            // Check if profession is in use
+            var inUse = await _context.Personeller.AnyAsync(p => p.MeslekID == id);
+            if (inUse)
+            {
+                TempData["ErrorMessage"] = "Bu meslek kullanımda olduğu için silinemez.";
+                return RedirectToPage();
+            }
+
+            _context.Lookup_Meslekler.Remove(meslek);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Meslek başarıyla silindi.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Silme sırasında hata oluştu: {ex.Message}";
+            }
+
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnGetEditMeslekAsync(int id)
+        {
+            EditingMeslekId = id;
+            await LoadDataAsync();
+            return Page();
+        }
+
+        public IActionResult OnGetCancelEditMeslek()
+        {
+            return RedirectToPage();
+        }
+
         private async Task LoadDataAsync()
         {
             GenelAyarlar = await _context.Lookup_GenelAyarlar
@@ -138,6 +362,14 @@ namespace LoyalKullaniciTakip.Pages.Ayarlar
 
             IzinKurallari = await _context.Lookup_KidemIzinHakedis
                 .OrderBy(k => k.MinKidemYili)
+                .ToListAsync();
+
+            Departmanlar = await _context.Lookup_Departmanlar
+                .OrderBy(d => d.Tanim)
+                .ToListAsync();
+
+            Meslekler = await _context.Lookup_Meslekler
+                .OrderBy(m => m.Tanim)
                 .ToListAsync();
         }
     }
