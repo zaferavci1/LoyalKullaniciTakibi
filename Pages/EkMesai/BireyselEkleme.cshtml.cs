@@ -56,6 +56,11 @@ namespace LoyalKullaniciTakip.Pages.EkMesai
 
             if (!ModelState.IsValid)
             {
+                // ModelState hatalarını göster
+                var errors = string.Join(", ", ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage));
+                TempData["ErrorMessage"] = $"Form doğrulama hatası: {errors}";
                 return Page();
             }
 
@@ -148,12 +153,20 @@ namespace LoyalKullaniciTakip.Pages.EkMesai
                 OlusturmaTarihi = DateTime.Now
             };
 
-            _context.EkMesaiKayitlari.Add(yeniKayit);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.EkMesaiKayitlari.Add(yeniKayit);
+                await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = $"Ek mesai kaydı başarıyla oluşturuldu. Tutar: {hesaplananTutar:N2} ₺";
+                TempData["SuccessMessage"] = $"Ek mesai kaydı başarıyla oluşturuldu. Tutar: {hesaplananTutar:N2} ₺";
 
-            return RedirectToPage("/EkMesai/Index");
+                return RedirectToPage("/EkMesai/Index");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Veritabanı hatası: {ex.Message}. İç hata: {ex.InnerException?.Message}";
+                return Page();
+            }
         }
 
         public async Task<IActionResult> OnGetPreviewAsync(int personelId, string tarih, decimal saat)

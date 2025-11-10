@@ -151,15 +151,17 @@ namespace LoyalKullaniciTakip.Pages.Raporlar
                 var pazarFazlaMesaiUcreti = pazarFazlaMesai * saatlikUcret * pazarKatsayi;
                 var toplamFazlaMesaiUcreti = haftaIciFazlaMesaiUcreti + cumartesiFazlaMesaiUcreti + pazarFazlaMesaiUcreti;
 
-                // Ek Mesai (Manuel giriş yapılan kayıtlar) tutarını ekle
-                var ekMesaiTutari = await _context.EkMesaiKayitlari
+                // Ek Mesai (SADECE Manuel giriş yapılan kayıtlar) tutarını ekle
+                // "Puantaj Otomatik" açıklamalı kayıtlar zaten yukarıda puantajdan hesaplandı, çift sayılmamalı
+                var manuelEkMesaiTutari = await _context.EkMesaiKayitlari
                     .Where(e => e.PersonelID == grup.Key.PersonelID &&
                                 e.Tarih >= ayinIlkGunu &&
-                                e.Tarih <= ayinSonGunu)
+                                e.Tarih <= ayinSonGunu &&
+                                e.Aciklama != "Puantaj Otomatik")
                     .SumAsync(e => e.HesaplananTutar);
 
-                // Toplam fazla mesai ücretine ek mesai tutarını da ekle
-                toplamFazlaMesaiUcreti += ekMesaiTutari;
+                // Toplam fazla mesai ücretine SADECE manuel girilen ek mesai tutarını ekle
+                toplamFazlaMesaiUcreti += manuelEkMesaiTutari;
 
                 // Kesintiler (Raporlu, Devamsız, Ücretsiz İzin)
                 var toplamKesintiGunu = raporluGun + devamsizGun + ucretsizIzinGun;
@@ -186,6 +188,7 @@ namespace LoyalKullaniciTakip.Pages.Raporlar
 
                 HakedisRaporu.Add(new HakedisHesaplamaViewModel
                 {
+                    PersonelID = grup.Key.PersonelID,
                     PersonelAdSoyad = puantajOzet.PersonelAdSoyad,
                     BrutMaas = brutMaas,
                     SaatlikUcret = saatlikUcret,
@@ -308,6 +311,86 @@ namespace LoyalKullaniciTakip.Pages.Raporlar
         }
 
         /// <summary>
+        /// Seçilen personel ve döneme ait ek mesai detaylarını döndürür (AJAX handler)
+        /// </summary>
+        public async Task<IActionResult> OnGetEkMesaiDetayAsync(int personelId, int ay, int yil)
+        {
+            try
+            {
+                // Seçilen dönemin ilk ve son günleri
+                var ayinIlkGunu = new DateTime(yil, ay, 1);
+                var ayinSonGunu = ayinIlkGunu.AddMonths(1).AddDays(-1);
+
+                // DEBUG: Tüm ek mesai kayıtlarını kontrol et
+                var tumKayitlar = await _context.EkMesaiKayitlari.ToListAsync();
+                var tumKayitSayisi = tumKayitlar.Count;
+
+                // DEBUG: Bu personele ait tüm kayıtlar
+                var personelKayitlari = tumKayitlar.Where(e => e.PersonelID == personelId).ToList();
+                var personelKayitSayisi = personelKayitlari.Count;
+
+                // Personel ve dönem için ek mesai kayıtlarını çek
+                var ekMesaiKayitlari = await _context.EkMesaiKayitlari
+                    .Where(e => e.PersonelID == personelId &&
+                                e.Tarih >= ayinIlkGunu &&
+                                e.Tarih <= ayinSonGunu)
+                    .OrderBy(e => e.Tarih)
+                    .Select(e => new
+                    {
+                        tarih = e.Tarih.ToString("dd.MM.yyyy"),
+                        gunTipi = e.GunTipi == "HaftaIci" ? "Hafta İçi" :
+                                  e.GunTipi == "Cumartesi" ? "Cumartesi" : "Pazar",
+                        ekMesaiSaati = e.EkMesaiSaati.ToString("N1"),
+                        katsayi = e.Katsayi.ToString("N2"),
+                        saatlikUcret = e.SaatlikUcret.ToString("N2"),
+                        hesaplananTutar = e.HesaplananTutar.ToString("N2")
+                    })
+                    .ToListAsync();
+
+                // Toplamları hesapla
+                var toplamSaat = await _context.EkMesaiKayitlari
+                    .Where(e => e.PersonelID == personelId &&
+                                e.Tarih >= ayinIlkGunu &&
+                                e.Tarih <= ayinSonGunu)
+                    .SumAsync(e => e.EkMesaiSaati);
+
+                var toplamTutar = await _context.EkMesaiKayitlari
+                    .Where(e => e.PersonelID == personelId &&
+                                e.Tarih >= ayinIlkGunu &&
+                                e.Tarih <= ayinSonGunu)
+                    .SumAsync(e => e.HesaplananTutar);
+
+                return new JsonResult(new
+                {
+                    success = true,
+                    kayitlar = ekMesaiKayitlari,
+                    toplamSaat = toplamSaat.ToString("N1"),
+                    toplamTutar = toplamTutar.ToString("N2"),
+                    // DEBUG bilgileri
+                    debug = new
+                    {
+                        personelId = personelId,
+                        ay = ay,
+                        yil = yil,
+                        ayinIlkGunu = ayinIlkGunu.ToString("yyyy-MM-dd"),
+                        ayinSonGunu = ayinSonGunu.ToString("yyyy-MM-dd"),
+                        tumKayitSayisi = tumKayitSayisi,
+                        personelKayitSayisi = personelKayitSayisi,
+                        personelTumTarihler = personelKayitlari.Select(k => k.Tarih.ToString("yyyy-MM-dd")).ToList()
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new
+                {
+                    success = false,
+                    mesaj = $"Veriler yüklenirken hata oluştu: {ex.Message}"
+                });
+            }
+        }
+
+        /// <summary>
         /// Puantaj özet raporunu oluşturur (Sprint 5 US 3 mantığı)
         /// </summary>
         private async Task<List<PuantajOzetViewModel>> GetPuantajOzetleri(int yil, int ay)
@@ -374,6 +457,7 @@ namespace LoyalKullaniciTakip.Pages.Raporlar
     /// </summary>
     public class HakedisHesaplamaViewModel
     {
+        public int PersonelID { get; set; }
         public string PersonelAdSoyad { get; set; } = string.Empty;
         public decimal BrutMaas { get; set; }
         public decimal SaatlikUcret { get; set; }

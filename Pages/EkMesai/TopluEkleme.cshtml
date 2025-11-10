@@ -26,8 +26,8 @@
         <h5 class="mb-0">Toplu Ek Mesai Bilgileri</h5>
     </div>
     <div class="card-body">
-        <form method="post">
-            <!-- Filtreleme -->
+        <!-- Filtreleme Formu (GET) -->
+        <form method="get" id="filterForm">
             <div class="row g-3 mb-4 pb-3 border-bottom">
                 <div class="col-md-6">
                     <label asp-for="SecilenDepartmanID" class="form-label">Departman Filtresi</label>
@@ -40,6 +40,10 @@
                             onchange="this.form.submit()"></select>
                 </div>
             </div>
+        </form>
+
+        <!-- Ana Form (POST) -->
+        <form method="post" id="mainForm">
 
             <!-- Personel Seçimi -->
             <div class="mb-4">

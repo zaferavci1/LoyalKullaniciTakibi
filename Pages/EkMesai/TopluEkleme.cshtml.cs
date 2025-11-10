@@ -46,8 +46,12 @@ namespace LoyalKullaniciTakip.Pages.EkMesai
         public decimal CumartesiKatsayi { get; set; }
         public decimal PazarKatsayi { get; set; }
 
-        public async Task OnGetAsync()
+        public async Task OnGetAsync(int? secilenDepartmanID, int? secilenMeslekID)
         {
+            // Query string'den gelen parametreleri al
+            SecilenDepartmanID = secilenDepartmanID;
+            SecilenMeslekID = secilenMeslekID;
+
             await LoadGenelAyarlarAsync();
             await PrepareDropdownsAsync();
             await LoadPersonelListAsync();
@@ -61,6 +65,11 @@ namespace LoyalKullaniciTakip.Pages.EkMesai
 
             if (!ModelState.IsValid)
             {
+                // ModelState hatalarını göster
+                var errors = string.Join(", ", ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage));
+                TempData["ErrorMessage"] = $"Form doğrulama hatası: {errors}";
                 return Page();
             }
 
@@ -176,22 +185,30 @@ namespace LoyalKullaniciTakip.Pages.EkMesai
                 }
             }
 
-            await _context.SaveChangesAsync();
-
-            // Sonuç mesajı
-            var mesaj = $"{basariliKayitSayisi} adet ek mesai kaydı başarıyla oluşturuldu.";
-            if (atlanankayitSayisi > 0)
+            try
             {
-                mesaj += $" {atlanankayitSayisi} adet kayıt zaten mevcut olduğu için atlandı.";
+                await _context.SaveChangesAsync();
+
+                // Sonuç mesajı
+                var mesaj = $"{basariliKayitSayisi} adet ek mesai kaydı başarıyla oluşturuldu.";
+                if (atlanankayitSayisi > 0)
+                {
+                    mesaj += $" {atlanankayitSayisi} adet kayıt zaten mevcut olduğu için atlandı.";
+                }
+                if (hataMesajlari.Any())
+                {
+                    mesaj += "<br/><strong>Hatalar:</strong><br/>" + string.Join("<br/>", hataMesajlari);
+                }
+
+                TempData["SuccessMessage"] = mesaj;
+
+                return RedirectToPage("/EkMesai/Index");
             }
-            if (hataMesajlari.Any())
+            catch (Exception ex)
             {
-                mesaj += "<br/><strong>Hatalar:</strong><br/>" + string.Join("<br/>", hataMesajlari);
+                TempData["ErrorMessage"] = $"Veritabanı hatası: {ex.Message}. İç hata: {ex.InnerException?.Message}";
+                return Page();
             }
-
-            TempData["SuccessMessage"] = mesaj;
-
-            return RedirectToPage("/EkMesai/Index");
         }
 
         public async Task<IActionResult> OnGetPersonellerByFiltersAsync(int? departmanId, int? meslekId)

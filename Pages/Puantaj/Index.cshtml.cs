@@ -57,7 +57,22 @@ namespace LoyalKullaniciTakip.Pages.Puantaj
             {
                 try
                 {
+                    // Genel ayarları yükle
+                    await LoadGunlukCalismaSaatiAsync();
+                    var genelAyarlar = await _context.Lookup_GenelAyarlar.ToListAsync();
+                    var haftaIciKatsayi = decimal.Parse(
+                        genelAyarlar.FirstOrDefault(a => a.AyarKey == "HaftaIciMesaiCarpani")?.AyarValue ?? "1.5", 
+                        System.Globalization.CultureInfo.InvariantCulture);
+                    var cumartesiKatsayi = decimal.Parse(
+                        genelAyarlar.FirstOrDefault(a => a.AyarKey == "CumartesiMesaiCarpani")?.AyarValue ?? "1.5", 
+                        System.Globalization.CultureInfo.InvariantCulture);
+                    var pazarKatsayi = decimal.Parse(
+                        genelAyarlar.FirstOrDefault(a => a.AyarKey == "PazarMesaiCarpani")?.AyarValue ?? "2.0", 
+                        System.Globalization.CultureInfo.InvariantCulture);
+
                     var kaydedilenSayisi = 0;
+                    var ekMesaiKayitSayisi = 0;
+
                     foreach (var kayit in puantajKayitlari)
                     {
                         // Boş durumları atla
@@ -92,12 +107,108 @@ namespace LoyalKullaniciTakip.Pages.Puantaj
                             mevcutKayit.Aciklama = "Manuel güncelleme";
                             kaydedilenSayisi++;
                         }
+
+                        // Fazla mesai kontrolü ve ek mesai kaydı oluşturma
+                        if (kayit.MesaiSaati.HasValue && kayit.MesaiSaati.Value > GunlukCalismaSaati)
+                        {
+                            var fazlaMesaiSaati = kayit.MesaiSaati.Value - GunlukCalismaSaati;
+
+                            // Personelin muhasebe bilgilerini çek
+                            var personel = await _context.Personeller
+                                .Include(p => p.Personel_Detay_Muhasebe)
+                                .FirstOrDefaultAsync(p => p.PersonelID == kayit.PersonelID);
+
+                            if (personel?.Personel_Detay_Muhasebe != null)
+                            {
+                                // Saatlik ücret hesabı (Brüt maaş / (30 gün × günlük çalışma saati))
+                                var brutMaas = personel.Personel_Detay_Muhasebe.TemelMaas;
+                                var aylikStandartSaat = 30 * GunlukCalismaSaati;
+                                var saatlikUcret = brutMaas / aylikStandartSaat;
+
+                                // Günün türüne göre katsayı belirle
+                                string gunTipi;
+                                decimal katsayi;
+
+                                if (tarih.DayOfWeek == DayOfWeek.Sunday)
+                                {
+                                    gunTipi = "Pazar";
+                                    katsayi = pazarKatsayi;
+                                }
+                                else if (tarih.DayOfWeek == DayOfWeek.Saturday)
+                                {
+                                    gunTipi = "Cumartesi";
+                                    katsayi = cumartesiKatsayi;
+                                }
+                                else
+                                {
+                                    gunTipi = "HaftaIci";
+                                    katsayi = haftaIciKatsayi;
+                                }
+
+                                // Toplam tutar hesabı
+                                var hesaplananTutar = fazlaMesaiSaati * saatlikUcret * katsayi;
+
+                                // Ek mesai kaydı UPSERT
+                                var mevcutEkMesai = await _context.EkMesaiKayitlari
+                                    .FirstOrDefaultAsync(e => e.PersonelID == kayit.PersonelID && 
+                                                             e.Tarih == tarih &&
+                                                             e.Aciklama == "Puantaj Otomatik");
+
+                                if (mevcutEkMesai == null)
+                                {
+                                    // Yeni ek mesai kaydı ekle
+                                    var yeniEkMesai = new EkMesaiKayitlari
+                                    {
+                                        PersonelID = kayit.PersonelID,
+                                        Tarih = tarih,
+                                        EkMesaiSaati = fazlaMesaiSaati,
+                                        GunTipi = gunTipi,
+                                        Katsayi = katsayi,
+                                        SaatlikUcret = saatlikUcret,
+                                        HesaplananTutar = hesaplananTutar,
+                                        Aciklama = "Puantaj Otomatik",
+                                        OlusturmaTarihi = DateTime.Now
+                                    };
+                                    await _context.EkMesaiKayitlari.AddAsync(yeniEkMesai);
+                                    ekMesaiKayitSayisi++;
+                                }
+                                else
+                                {
+                                    // Mevcut ek mesai kaydını güncelle
+                                    mevcutEkMesai.EkMesaiSaati = fazlaMesaiSaati;
+                                    mevcutEkMesai.GunTipi = gunTipi;
+                                    mevcutEkMesai.Katsayi = katsayi;
+                                    mevcutEkMesai.SaatlikUcret = saatlikUcret;
+                                    mevcutEkMesai.HesaplananTutar = hesaplananTutar;
+                                    ekMesaiKayitSayisi++;
+                                }
+                            }
+                        }
+                        else if (kayit.MesaiSaati.HasValue && kayit.MesaiSaati.Value <= GunlukCalismaSaati)
+                        {
+                            // Eğer mesai saati günlük çalışma saatinden az veya eşitse,
+                            // o tarih için otomatik oluşturulmuş ek mesai kaydını sil
+                            var mevcutEkMesai = await _context.EkMesaiKayitlari
+                                .FirstOrDefaultAsync(e => e.PersonelID == kayit.PersonelID && 
+                                                         e.Tarih == tarih &&
+                                                         e.Aciklama == "Puantaj Otomatik");
+                            
+                            if (mevcutEkMesai != null)
+                            {
+                                _context.EkMesaiKayitlari.Remove(mevcutEkMesai);
+                            }
+                        }
                     }
 
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
 
-                    TempData["SuccessMessage"] = $"Puantaj kayıtları başarıyla kaydedildi. ({kaydedilenSayisi} kayıt)";
+                    var mesaj = $"Puantaj kayıtları başarıyla kaydedildi. ({kaydedilenSayisi} kayıt)";
+                    if (ekMesaiKayitSayisi > 0)
+                    {
+                        mesaj += $" {ekMesaiKayitSayisi} ek mesai kaydı oluşturuldu/güncellendi.";
+                    }
+                    TempData["SuccessMessage"] = mesaj;
                 }
                 catch (Exception ex)
                 {

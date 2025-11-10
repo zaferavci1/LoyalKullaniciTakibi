@@ -154,6 +154,7 @@
                                     <th class="text-center">Kesinti Günü</th>
                                     <th class="text-end">Kesinti Tutarı</th>
                                     <th class="text-end">Net Hakedis</th>
+                                    <th class="text-center">İşlemler</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -208,6 +209,12 @@
                                         <td class="text-end text-success">
                                             <strong>@hakedis.NetHakedis.ToString("N2") ₺</strong>
                                         </td>
+                                        <td class="text-center">
+                                            <button type="button" class="btn btn-sm btn-primary"
+                                                    onclick="acEkMesaiDetayModal(@hakedis.PersonelID, '@hakedis.PersonelAdSoyad')">
+                                                <i class="bi bi-clock-history"></i> Ek Mesai
+                                            </button>
+                                        </td>
                                     </tr>
                                 }
                             </tbody>
@@ -221,6 +228,7 @@
                                     <td class="text-center">@Model.HakedisRaporu.Sum(h => h.ToplamKesintiGunu)</td>
                                     <td class="text-end text-danger">-@Model.HakedisRaporu.Sum(h => h.KesintiTutari).ToString("N2") ₺</td>
                                     <td class="text-end text-success">@Model.HakedisRaporu.Sum(h => h.NetHakedis).ToString("N2") ₺</td>
+                                    <td></td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -290,9 +298,177 @@
     }
 </div>
 
+@if (Model.RaporGosterilsin)
+{
+    <!-- Ek Mesai Detayları Modal -->
+    <div class="modal fade" id="ekMesaiDetayModal" tabindex="-1" aria-labelledby="ekMesaiDetayModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="ekMesaiDetayModalLabel">
+                        <i class="bi bi-clock-history me-2"></i>
+                        <span id="modalPersonelAdi"></span> - Ek Mesai Detayları
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Dönem Bilgisi -->
+                    <div class="alert alert-info mb-3">
+                        <i class="bi bi-calendar3"></i>
+                        <strong>Dönem:</strong> <span id="modalDonemBilgisi"></span>
+                    </div>
+
+                    <!-- Loading Spinner -->
+                    <div id="modalLoading" class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Yükleniyor...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Veriler yükleniyor...</p>
+                    </div>
+
+                    <!-- Hata Mesajı -->
+                    <div id="modalHata" class="alert alert-danger" style="display: none;">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Hata:</strong> <span id="modalHataMesaji"></span>
+                    </div>
+
+                    <!-- Ek Mesai Kayıtları Tablosu -->
+                    <div id="modalTablo" style="display: none;">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Tarih</th>
+                                        <th class="text-center">Gün Tipi</th>
+                                        <th class="text-center">Saat</th>
+                                        <th class="text-center">Katsayı</th>
+                                        <th class="text-end">Saatlik Ücret</th>
+                                        <th class="text-end">Tutar</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modalTableBody">
+                                    <!-- JavaScript ile doldurulacak -->
+                                </tbody>
+                                <tfoot class="table-light fw-bold">
+                                    <tr>
+                                        <td colspan="2">TOPLAM:</td>
+                                        <td class="text-center" id="toplamSaat">-</td>
+                                        <td colspan="2"></td>
+                                        <td class="text-end text-success" id="toplamTutar">-</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Kayıt Yok Mesajı -->
+                    <div id="modalKayitYok" class="text-center text-muted py-4" style="display: none;">
+                        <i class="bi bi-inbox" style="font-size: 48px;"></i>
+                        <p class="mt-3">Bu dönemde ek mesai kaydı bulunmamaktadır.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    let ekMesaiModal;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Modal nesnesini oluştur
+        ekMesaiModal = new bootstrap.Modal(document.getElementById('ekMesaiDetayModal'));
+    });
+
+    function acEkMesaiDetayModal(personelId, personelAdi) {
+        // Modal başlığını güncelle
+        document.getElementById('modalPersonelAdi').textContent = personelAdi;
+
+        // Dönem bilgisini güncelle
+        const ay = @Model.SecilenAy;
+        const yil = @Model.SecilenYil;
+        const ayAdlari = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+                         'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+        document.getElementById('modalDonemBilgisi').textContent = `${ayAdlari[ay - 1]} ${yil}`;
+
+        // UI'ı sıfırla
+        document.getElementById('modalLoading').style.display = 'block';
+        document.getElementById('modalHata').style.display = 'none';
+        document.getElementById('modalTablo').style.display = 'none';
+        document.getElementById('modalKayitYok').style.display = 'none';
+
+        // Modal'ı göster
+        ekMesaiModal.show();
+
+        // AJAX ile veri çek
+        fetch(`/Raporlar/HakedisHesaplama?handler=EkMesaiDetay&personelId=${personelId}&ay=${ay}&yil=${yil}`)
+            .then(response => response.json())
+            .then(data => {
+                // Loading'i gizle
+                document.getElementById('modalLoading').style.display = 'none';
+
+                if (data.success) {
+                    if (data.kayitlar && data.kayitlar.length > 0) {
+                        // Tabloyu doldur
+                        doldurEkMesaiTablosu(data.kayitlar, data.toplamSaat, data.toplamTutar);
+                        document.getElementById('modalTablo').style.display = 'block';
+                    } else {
+                        // Kayıt yok mesajını göster
+                        document.getElementById('modalKayitYok').style.display = 'block';
+                    }
+                } else {
+                    // Hata mesajını göster
+                    document.getElementById('modalHataMesaji').textContent = data.mesaj || 'Bir hata oluştu';
+                    document.getElementById('modalHata').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('AJAX Hatası:', error);
+                document.getElementById('modalLoading').style.display = 'none';
+                document.getElementById('modalHataMesaji').textContent = 'Veriler yüklenirken bir hata oluştu.';
+                document.getElementById('modalHata').style.display = 'block';
+            });
+    }
+
+    function doldurEkMesaiTablosu(kayitlar, toplamSaat, toplamTutar) {
+        const tbody = document.getElementById('modalTableBody');
+        tbody.innerHTML = '';
+
+        kayitlar.forEach(kayit => {
+            // Gün tipi badge rengini belirle
+            let gunTipiBadgeClass = 'bg-primary';
+            if (kayit.gunTipi === 'Cumartesi') {
+                gunTipiBadgeClass = 'bg-warning text-dark';
+            } else if (kayit.gunTipi === 'Pazar') {
+                gunTipiBadgeClass = 'bg-danger';
+            }
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${kayit.tarih}</td>
+                <td class="text-center">
+                    <span class="badge ${gunTipiBadgeClass}">${kayit.gunTipi}</span>
+                </td>
+                <td class="text-center">${kayit.ekMesaiSaati}</td>
+                <td class="text-center">${kayit.katsayi}x</td>
+                <td class="text-end">${kayit.saatlikUcret} ₺</td>
+                <td class="text-end">${kayit.hesaplananTutar} ₺</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        // Toplamları güncelle
+        document.getElementById('toplamSaat').textContent = toplamSaat;
+        document.getElementById('toplamTutar').textContent = toplamTutar + ' ₺';
+    }
+    </script>
+}
+
 <style>
     @@media print {
-        .btn, .card-header h5, nav, footer, form {
+        .btn, .card-header h5, nav, footer, form, .modal {
             display: none !important;
         }
 
