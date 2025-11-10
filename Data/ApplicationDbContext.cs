@@ -22,6 +22,7 @@ namespace LoyalKullaniciTakip.Data
         public DbSet<IzinTalepleri> IzinTalepleri { get; set; }
         public DbSet<PuantajGunluk> PuantajGunluk { get; set; }
         public DbSet<BordroHakedisKaydi> BordroHakedisKayitlari { get; set; }
+        public DbSet<EkMesaiKayitlari> EkMesaiKayitlari { get; set; }
 
         // Lookup Tables
         public DbSet<Lookup_CalismaTipi> Lookup_CalismaTipi { get; set; }
@@ -35,6 +36,7 @@ namespace LoyalKullaniciTakip.Data
         public DbSet<Lookup_Departmanlar> Lookup_Departmanlar { get; set; }
         public DbSet<Lookup_Meslekler> Lookup_Meslekler { get; set; }
         public DbSet<Lookup_GenelAyarlar> Lookup_GenelAyarlar { get; set; }
+        public DbSet<Lookup_EkMesaiKatsayilari> Lookup_EkMesaiKatsayilari { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -72,6 +74,18 @@ namespace LoyalKullaniciTakip.Data
                       .WithOne(p => p.Personel_Detay_SGK)
                       .HasForeignKey<Personel_Detay_SGK>(pd => pd.PersonelID)
                       .OnDelete(DeleteBehavior.Cascade);
+
+                // Many-to-1 relationship with Lookup_CalismaTipi
+                entity.HasOne(pd => pd.CalismaTipi)
+                      .WithMany()
+                      .HasForeignKey(pd => pd.CalismaTipiID)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                // Many-to-1 relationship with Lookup_MeslekKodlari
+                entity.HasOne(pd => pd.MeslekKodu)
+                      .WithMany()
+                      .HasForeignKey(pd => pd.SGKMeslekKoduID)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
             // Personel_Detay_Muhasebe entity configuration
@@ -318,6 +332,46 @@ namespace LoyalKullaniciTakip.Data
                 entity.HasOne(b => b.Personel)
                       .WithMany()
                       .HasForeignKey(b => b.PersonelID)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Lookup_EkMesaiKatsayilari entity configuration
+            modelBuilder.Entity<Lookup_EkMesaiKatsayilari>(entity =>
+            {
+                entity.HasKey(k => k.KatsayiID);
+
+                // GunTipi unique constraint
+                entity.HasIndex(k => k.GunTipi)
+                      .IsUnique();
+            });
+
+            // EkMesaiKayitlari entity configuration
+            modelBuilder.Entity<EkMesaiKayitlari>(entity =>
+            {
+                entity.HasKey(e => e.EkMesaiID);
+
+                // Composite unique index on PersonelID and Tarih
+                // Aynı personelin aynı güne birden fazla ek mesai kaydı atmasını engeller
+                entity.HasIndex(e => new { e.PersonelID, e.Tarih })
+                      .IsUnique();
+
+                // Configure decimal precision
+                entity.Property(e => e.EkMesaiSaati)
+                      .HasColumnType("decimal(18,2)");
+
+                entity.Property(e => e.Katsayi)
+                      .HasColumnType("decimal(18,2)");
+
+                entity.Property(e => e.SaatlikUcret)
+                      .HasColumnType("decimal(18,2)");
+
+                entity.Property(e => e.HesaplananTutar)
+                      .HasColumnType("decimal(18,2)");
+
+                // 1-to-many relationship with Personel
+                entity.HasOne(e => e.Personel)
+                      .WithMany()
+                      .HasForeignKey(e => e.PersonelID)
                       .OnDelete(DeleteBehavior.Cascade);
             });
         }

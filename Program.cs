@@ -128,6 +128,32 @@ using (var scope = app.Services.CreateScope())
         );
         context.SaveChanges();
     }
+
+    // Ek mesai katsayıları yoksa seed et
+    if (!context.Lookup_EkMesaiKatsayilari.Any())
+    {
+        context.Lookup_EkMesaiKatsayilari.AddRange(
+            new LoyalKullaniciTakip.Data.Lookups.Lookup_EkMesaiKatsayilari
+            {
+                GunTipi = "HaftaIci",
+                Katsayi = 1.5m,
+                Aciklama = "Hafta İçi Fazla Mesai (Pazartesi-Cuma)"
+            },
+            new LoyalKullaniciTakip.Data.Lookups.Lookup_EkMesaiKatsayilari
+            {
+                GunTipi = "Cumartesi",
+                Katsayi = 1.75m,
+                Aciklama = "Cumartesi Çalışması"
+            },
+            new LoyalKullaniciTakip.Data.Lookups.Lookup_EkMesaiKatsayilari
+            {
+                GunTipi = "Pazar",
+                Katsayi = 2.0m,
+                Aciklama = "Pazar/Tatil Çalışması"
+            }
+        );
+        context.SaveChanges();
+    }
 }
 
 // Configure the HTTP request pipeline.

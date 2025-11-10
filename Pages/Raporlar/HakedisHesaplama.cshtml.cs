@@ -151,6 +151,16 @@ namespace LoyalKullaniciTakip.Pages.Raporlar
                 var pazarFazlaMesaiUcreti = pazarFazlaMesai * saatlikUcret * pazarKatsayi;
                 var toplamFazlaMesaiUcreti = haftaIciFazlaMesaiUcreti + cumartesiFazlaMesaiUcreti + pazarFazlaMesaiUcreti;
 
+                // Ek Mesai (Manuel giriş yapılan kayıtlar) tutarını ekle
+                var ekMesaiTutari = await _context.EkMesaiKayitlari
+                    .Where(e => e.PersonelID == grup.Key.PersonelID &&
+                                e.Tarih >= ayinIlkGunu &&
+                                e.Tarih <= ayinSonGunu)
+                    .SumAsync(e => e.HesaplananTutar);
+
+                // Toplam fazla mesai ücretine ek mesai tutarını da ekle
+                toplamFazlaMesaiUcreti += ekMesaiTutari;
+
                 // Kesintiler (Raporlu, Devamsız, Ücretsiz İzin)
                 var toplamKesintiGunu = raporluGun + devamsizGun + ucretsizIzinGun;
                 var kesintiTutari = toplamKesintiGunu * gunlukMaas;

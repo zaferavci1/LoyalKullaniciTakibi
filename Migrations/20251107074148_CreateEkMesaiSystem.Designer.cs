@@ -3,6 +3,7 @@ using System;
 using LoyalKullaniciTakip.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LoyalKullaniciTakip.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251107074148_CreateEkMesaiSystem")]
+    partial class CreateEkMesaiSystem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -604,10 +607,6 @@ namespace LoyalKullaniciTakip.Migrations
 
                     b.HasKey("PersonelID");
 
-                    b.HasIndex("CalismaTipiID");
-
-                    b.HasIndex("SGKMeslekKoduID");
-
                     b.ToTable("Personel_Detay_SGK");
                 });
 
@@ -830,27 +829,11 @@ namespace LoyalKullaniciTakip.Migrations
 
             modelBuilder.Entity("LoyalKullaniciTakip.Data.Personel_Detay_SGK", b =>
                 {
-                    b.HasOne("LoyalKullaniciTakip.Data.Lookups.Lookup_CalismaTipi", "CalismaTipi")
-                        .WithMany()
-                        .HasForeignKey("CalismaTipiID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("LoyalKullaniciTakip.Data.Personel", "Personel")
                         .WithOne("Personel_Detay_SGK")
                         .HasForeignKey("LoyalKullaniciTakip.Data.Personel_Detay_SGK", "PersonelID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("LoyalKullaniciTakip.Data.Lookups.Lookup_MeslekKodlari", "MeslekKodu")
-                        .WithMany()
-                        .HasForeignKey("SGKMeslekKoduID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("CalismaTipi");
-
-                    b.Navigation("MeslekKodu");
 
                     b.Navigation("Personel");
                 });
