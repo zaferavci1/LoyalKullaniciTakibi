@@ -5,60 +5,142 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - LoyalKullaniciTakip</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/LoyalKullaniciTakip.styles.css" asp-append-version="true" />
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand d-flex align-items-center" asp-area="" asp-page="/Index">
-                    <img src="~/images/loyal-tech-logo.png" alt="Loyal Tech" height="40" class="me-2" />
-                    <span>LoyalKullaniciTakip</span>
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-3" style="border-bottom: 3px solid #2c3e50;">
+            <div class="container-fluid">
+                <a class="navbar-brand d-flex align-items-center fw-bold" asp-area="" asp-page="/Index">
+                    <i class="bi bi-speedometer2 me-2 fs-4"></i>
+                    <span class="d-none d-md-inline">Loyal Kullanıcı Takip</span>
+                    <span class="d-inline d-md-none">LKT</span>
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                <div class="collapse navbar-collapse" id="mainNavbar">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <!-- Ana Sayfa -->
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Ana Sayfa</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Personel/Index">Personel</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Izin/List">İzin Talepleri</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Puantaj/Index">
-                                <strong>Puantaj</strong>
+                            <a class="nav-link" asp-area="" asp-page="/Index">
+                                <i class="bi bi-house-door me-1"></i>Ana Sayfa
                             </a>
                         </li>
+
+                        <!-- Personel Yönetimi -->
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-dark" href="#" id="raporlarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Raporlar
+                            <a class="nav-link dropdown-toggle" href="#" id="personelDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-people me-1"></i>Personel
                             </a>
-                            <ul class="dropdown-menu" aria-labelledby="raporlarDropdown">
-                                <li><a class="dropdown-item" asp-area="" asp-page="/Raporlar/YillikIzin">Yıllık İzin Raporu</a></li>
-                                <li><a class="dropdown-item" asp-area="" asp-page="/Raporlar/PuantajOzet">Puantaj Özet Raporu</a></li>
-                                <li><a class="dropdown-item" asp-area="" asp-page="/Raporlar/HakedisHesaplama">Hakediş Hesaplama</a></li>
-                                <li><a class="dropdown-item" asp-area="" asp-page="/Raporlar/DepartmanBazliPuantaj">Departman Bazlı Puantaj</a></li>
+                            <ul class="dropdown-menu dropdown-menu-modern" aria-labelledby="personelDropdown">
+                                <li>
+                                    <h6 class="dropdown-header"><i class="bi bi-person-lines-fill me-2"></i>Personel Yönetimi</h6>
+                                </li>
+                                <li><a class="dropdown-item" asp-area="" asp-page="/Personel/Index">
+                                    <i class="bi bi-list-ul me-2"></i>Personel Listesi
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" asp-area="" asp-page="/Ayarlar/GenelAyarlar">
+                                    <i class="bi bi-building me-2"></i>Departman & Meslek Yönetimi
+                                </a></li>
+                            </ul>
+                        </li>
+
+                        <!-- Puantaj & İzin -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="puantajDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-calendar-check me-1"></i>Puantaj & İzin
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-modern" aria-labelledby="puantajDropdown">
+                                <li>
+                                    <h6 class="dropdown-header"><i class="bi bi-clock-history me-2"></i>Zaman Yönetimi</h6>
+                                </li>
+                                <li><a class="dropdown-item" asp-area="" asp-page="/Puantaj/Index">
+                                    <i class="bi bi-calendar3 me-2"></i>Puantaj Girişi
+                                </a></li>
+                                <li><a class="dropdown-item" asp-area="" asp-page="/Izin/List">
+                                    <i class="bi bi-calendar-event me-2"></i>İzin Talepleri
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" asp-area="" asp-page="/EkMesai/Index">
+                                    <i class="bi bi-clock me-2"></i>Ek Mesai Kayıtları
+                                </a></li>
+                            </ul>
+                        </li>
+
+                        <!-- Raporlar -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="raporlarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-file-earmark-bar-graph me-1"></i>Raporlar
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-modern" aria-labelledby="raporlarDropdown">
+                                <li>
+                                    <h6 class="dropdown-header"><i class="bi bi-graph-up me-2"></i>Analiz & Raporlar</h6>
+                                </li>
+                                <li><a class="dropdown-item" asp-area="" asp-page="/Raporlar/PuantajOzet">
+                                    <i class="bi bi-calendar-week me-2"></i>Puantaj Özet Raporu
+                                </a></li>
+                                <li><a class="dropdown-item" asp-area="" asp-page="/Raporlar/DepartmanBazliPuantaj">
+                                    <i class="bi bi-diagram-3 me-2"></i>Departman Bazlı Puantaj
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" asp-area="" asp-page="/Raporlar/YillikIzin">
+                                    <i class="bi bi-calendar-range me-2"></i>Yıllık İzin Raporu
+                                </a></li>
+                                <li><a class="dropdown-item" asp-area="" asp-page="/Raporlar/HakedisHesaplama">
+                                    <i class="bi bi-calculator me-2"></i>Hakediş Hesaplama
+                                </a></li>
+                            </ul>
+                        </li>
+
+                        <!-- Ayarlar -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="ayarlarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-gear me-1"></i>Ayarlar
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-modern" aria-labelledby="ayarlarDropdown">
+                                <li>
+                                    <h6 class="dropdown-header"><i class="bi bi-sliders me-2"></i>Sistem Ayarları</h6>
+                                </li>
+                                <li><a class="dropdown-item" asp-area="" asp-page="/Ayarlar/GenelAyarlar">
+                                    <i class="bi bi-gear-fill me-2"></i>Genel Ayarlar
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" asp-area="" asp-page="/Privacy">
+                                    <i class="bi bi-shield-lock me-2"></i>Gizlilik
+                                </a></li>
                             </ul>
                         </li>
                     </ul>
+
+                    <!-- Sağ Taraf - Kullanıcı Bilgisi -->
+                    <div class="d-flex align-items-center">
+                        <span class="navbar-text text-dark me-3">
+                            <i class="bi bi-person-circle me-1"></i>
+                            <span class="d-none d-md-inline fw-semibold">Admin</span>
+                        </span>
+                        <button class="btn btn-outline-dark btn-sm">
+                            <i class="bi bi-box-arrow-right"></i>
+                            <span class="d-none d-md-inline ms-1">Çıkış</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+    <div class="container-fluid" style="background-color: #F5F5F5;">
+        <div class="container">
+            <main role="main" class="pb-3">
+                @RenderBody()
+            </main>
+        </div>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="border-top footer text-muted bg-white">
         <div class="container">
             &copy; 2025 - LoyalKullaniciTakip - <a asp-area="" asp-page="/Privacy">Privacy</a>
         </div>
