@@ -62,8 +62,9 @@
 @if (Model.PuantajData.PersonelSatirlari.Any())
 {
     <div class="alert alert-info">
-        <strong>Bilgi:</strong> Dropdownlardan durumları seçin, mesai saatlerini girin ve "Tümünü Kaydet" butonuna basın.
-        İzin onayları otomatik olarak puantaja işlenmiştir.
+        <strong>Bilgi:</strong> Her gün için departman kısaltması, durum ve mesai saatini seçin/girin.
+        Departman kısaltmasının üzerine geldiğinizde tam adını görebilirsiniz. "Tümünü Kaydet" butonuna basın.
+        <br/><small>İzin onayları otomatik olarak puantaja işlenmiştir.</small>
     </div>
 
     <!-- Puantaj Grid -->
@@ -77,14 +78,13 @@
                 <thead class="table-dark">
                     <tr>
                         <th style="position: sticky; left: 0; z-index: 10; background: #212529; min-width: 200px;" class="text-white">Personel</th>
-                        <th style="position: sticky; left: 200px; z-index: 10; background: #212529; min-width: 150px;" class="text-white">Departman</th>
                         @for (int gun = 1; gun <= aydakiGunSayisi; gun++)
                         {
                             var tarih = new DateTime(Model.PuantajData.Yil, Model.PuantajData.Ay, gun);
                             var gunAdi = tarih.ToString("ddd", new System.Globalization.CultureInfo("tr-TR"));
                             var weekendClass = tarih.DayOfWeek == DayOfWeek.Saturday || tarih.DayOfWeek == DayOfWeek.Sunday ? "table-secondary" : "";
                             
-                            <th class="text-center @weekendClass" style="min-width: 90px;">
+                            <th class="text-center @weekendClass" style="min-width: 100px;">
                                 <div>@gun</div>
                                 <small class="text-muted">@gunAdi</small>
                             </th>
@@ -101,24 +101,6 @@
                             <td style="position: sticky; left: 0; z-index: 5; background: white; font-weight: 500;">
                                 @personel.PersonelAdSoyad
                             </td>
-                            <td style="position: sticky; left: 200px; z-index: 5; background: white;">
-                                <select class="form-select form-select-sm departman-select"
-                                        data-personel-id="@personel.PersonelID"
-                                        onchange="updatePersonelDepartman(@personel.PersonelID, this.value)">
-                                    <option value="">-- Seçiniz --</option>
-                                    @foreach (var dept in Model.Departmanlar)
-                                    {
-                                        @if (dept.DepartmanID == personel.DepartmanID)
-                                        {
-                                            <option value="@dept.DepartmanID" selected>@dept.Tanim</option>
-                                        }
-                                        else
-                                        {
-                                            <option value="@dept.DepartmanID">@dept.Tanim</option>
-                                        }
-                                    }
-                                </select>
-                            </td>
                             @for (int gun = 1; gun <= aydakiGunSayisi; gun++)
                             {
                                 var tarih = new DateTime(Model.PuantajData.Yil, Model.PuantajData.Ay, gun);
@@ -133,17 +115,30 @@
                                     <input type="hidden" name="puantajKayitlari[@kayitIndex].Ay" value="@Model.PuantajData.Ay" />
                                     <input type="hidden" name="puantajKayitlari[@kayitIndex].Yil" value="@Model.PuantajData.Yil" />
                                     <input type="hidden" name="puantajKayitlari[@kayitIndex].Gun" value="@gun" />
-                                    <input type="hidden"
-                                           name="puantajKayitlari[@kayitIndex].DepartmanID"
-                                           value="@departmanId"
-                                           class="departman-input"
-                                           data-personel-id="@personel.PersonelID" />
 
+                                    <!-- Departman Select - Kısaltmalarla -->
+                                    <select name="puantajKayitlari[@kayitIndex].DepartmanID"
+                                            class="form-select form-select-sm mb-1"
+                                            style="font-size: 0.7rem; padding: 0.2rem; height: auto;">
+                                        <option value="">-</option>
+                                        @foreach (var dept in Model.Departmanlar)
+                                        {
+                                            var kisaltma = dept.Tanim.Length <= 3 ? dept.Tanim :
+                                                          (dept.Tanim.Length > 3 ? dept.Tanim.Substring(0, 3).ToUpper() : dept.Tanim.ToUpper());
+                                            <option value="@dept.DepartmanID"
+                                                    title="@dept.Tanim"
+                                                    selected="@(departmanId == dept.DepartmanID ? "selected" : null)">
+                                                @kisaltma
+                                            </option>
+                                        }
+                                    </select>
+
+                                    <!-- Durum Select -->
                                     <select name="puantajKayitlari[@kayitIndex].PuantajDurumID"
                                             id="durum_@kayitIndex"
                                             class="form-select form-select-sm mb-1 puantaj-durum-select"
                                             data-index="@kayitIndex"
-                                            style="font-size: 0.75rem; padding: 0.25rem;">
+                                            style="font-size: 0.7rem; padding: 0.2rem; height: auto;">
                                         <option value="0">-</option>
                                         @foreach (var durum in Model.PuantajDurumlari)
                                         {
@@ -156,11 +151,12 @@
                                         }
                                     </select>
 
+                                    <!-- Mesai Saati Input -->
                                     <input type="number"
                                            name="puantajKayitlari[@kayitIndex].MesaiSaati"
                                            id="mesai_@kayitIndex"
                                            class="form-control form-control-sm mesai-saati-input"
-                                           style="font-size: 0.75rem; padding: 0.25rem;"
+                                           style="font-size: 0.7rem; padding: 0.2rem; height: auto;"
                                            placeholder="Saat"
                                            step="0.5"
                                            min="0"
@@ -309,15 +305,5 @@ else
         });
     });
 
-    // Departman güncelleme fonksiyonu
-    function updatePersonelDepartman(personelId, departmanId) {
-        // O personele ait tüm departman inputlarını bul ve güncelle
-        var departmanInputs = document.querySelectorAll('.departman-input[data-personel-id="' + personelId + '"]');
-        departmanInputs.forEach(function(input) {
-            input.value = departmanId || '';
-        });
-
-        console.log('Personel ' + personelId + ' için ' + departmanInputs.length + ' gün departmanı güncellendi: ' + (departmanId || 'boş'));
-    }
 </script>
 
