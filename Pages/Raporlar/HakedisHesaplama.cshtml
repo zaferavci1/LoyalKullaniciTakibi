@@ -210,9 +210,13 @@
                                             <strong>@hakedis.NetHakedis.ToString("N2") ₺</strong>
                                         </td>
                                         <td class="text-center">
-                                            <button type="button" class="btn btn-sm btn-primary"
+                                            <button type="button" class="btn btn-sm btn-primary me-1"
                                                     onclick="acEkMesaiDetayModal(@hakedis.PersonelID, '@hakedis.PersonelAdSoyad')">
                                                 <i class="bi bi-clock-history"></i> Ek Mesai
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-info"
+                                                    onclick="acDepartmanDetayModal(@hakedis.PersonelID, '@hakedis.PersonelAdSoyad')">
+                                                <i class="bi bi-building"></i> Departman
                                             </button>
                                         </td>
                                     </tr>
@@ -462,6 +466,152 @@
         // Toplamları güncelle
         document.getElementById('toplamSaat').textContent = toplamSaat;
         document.getElementById('toplamTutar').textContent = toplamTutar + ' ₺';
+    }
+    </script>
+
+    <!-- Departman Detayları Modal -->
+    <div class="modal fade" id="departmanDetayModal" tabindex="-1" aria-labelledby="departmanDetayModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title" id="departmanDetayModalLabel">
+                        <i class="bi bi-building me-2"></i>
+                        <span id="modalDepartmanPersonelAdi"></span> - Departman Detayları
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Dönem Bilgisi -->
+                    <div class="alert alert-info mb-3">
+                        <i class="bi bi-calendar3"></i>
+                        <strong>Dönem:</strong> <span id="modalDepartmanDonemBilgisi"></span>
+                    </div>
+
+                    <!-- Loading Spinner -->
+                    <div id="modalDepartmanLoading" class="text-center py-4">
+                        <div class="spinner-border text-info" role="status">
+                            <span class="visually-hidden">Yükleniyor...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Veriler yükleniyor...</p>
+                    </div>
+
+                    <!-- Hata Mesajı -->
+                    <div id="modalDepartmanHata" class="alert alert-danger" style="display: none;">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Hata:</strong> <span id="modalDepartmanHataMesaji"></span>
+                    </div>
+
+                    <!-- Departman Kayıtları Tablosu -->
+                    <div id="modalDepartmanTablo" style="display: none;">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Departman</th>
+                                        <th class="text-center">Çalışılan Gün Sayısı</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modalDepartmanTableBody">
+                                    <!-- JavaScript ile doldurulacak -->
+                                </tbody>
+                                <tfoot class="table-light fw-bold">
+                                    <tr>
+                                        <td>TOPLAM:</td>
+                                        <td class="text-center text-success" id="toplamDepartmanGun">-</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Kayıt Yok Mesajı -->
+                    <div id="modalDepartmanKayitYok" class="text-center text-muted py-4" style="display: none;">
+                        <i class="bi bi-inbox" style="font-size: 48px;"></i>
+                        <p class="mt-3">Bu dönemde departman kaydı bulunmamaktadır.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    let departmanModal;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Modal nesnesini oluştur
+        if (!departmanModal && document.getElementById('departmanDetayModal')) {
+            departmanModal = new bootstrap.Modal(document.getElementById('departmanDetayModal'));
+        }
+    });
+
+    function acDepartmanDetayModal(personelId, personelAdi) {
+        // Modal başlığını güncelle
+        document.getElementById('modalDepartmanPersonelAdi').textContent = personelAdi;
+
+        // Dönem bilgisini güncelle
+        const ay = @Model.SecilenAy;
+        const yil = @Model.SecilenYil;
+        const ayAdlari = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+                         'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+        document.getElementById('modalDepartmanDonemBilgisi').textContent = `${ayAdlari[ay - 1]} ${yil}`;
+
+        // UI'ı sıfırla
+        document.getElementById('modalDepartmanLoading').style.display = 'block';
+        document.getElementById('modalDepartmanHata').style.display = 'none';
+        document.getElementById('modalDepartmanTablo').style.display = 'none';
+        document.getElementById('modalDepartmanKayitYok').style.display = 'none';
+
+        // Modal'ı göster
+        departmanModal.show();
+
+        // AJAX ile veri çek
+        fetch(`/Raporlar/HakedisHesaplama?handler=DepartmanDetay&personelId=${personelId}&ay=${ay}&yil=${yil}`)
+            .then(response => response.json())
+            .then(data => {
+                // Loading'i gizle
+                document.getElementById('modalDepartmanLoading').style.display = 'none';
+
+                if (data.success) {
+                    if (data.kayitlar && data.kayitlar.length > 0) {
+                        // Tabloyu doldur
+                        doldurDepartmanTablosu(data.kayitlar, data.toplamGun);
+                        document.getElementById('modalDepartmanTablo').style.display = 'block';
+                    } else {
+                        // Kayıt yok mesajını göster
+                        document.getElementById('modalDepartmanKayitYok').style.display = 'block';
+                    }
+                } else {
+                    // Hata mesajını göster
+                    document.getElementById('modalDepartmanHataMesaji').textContent = data.mesaj || 'Bir hata oluştu';
+                    document.getElementById('modalDepartmanHata').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('AJAX Hatası:', error);
+                document.getElementById('modalDepartmanLoading').style.display = 'none';
+                document.getElementById('modalDepartmanHataMesaji').textContent = 'Veriler yüklenirken bir hata oluştu.';
+                document.getElementById('modalDepartmanHata').style.display = 'block';
+            });
+    }
+
+    function doldurDepartmanTablosu(kayitlar, toplamGun) {
+        const tbody = document.getElementById('modalDepartmanTableBody');
+        tbody.innerHTML = '';
+
+        kayitlar.forEach(kayit => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${kayit.departmanAdi}</td>
+                <td class="text-center">${kayit.gunSayisi}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        // Toplamı güncelle
+        document.getElementById('toplamDepartmanGun').textContent = toplamGun;
     }
     </script>
 }

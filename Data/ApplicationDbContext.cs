@@ -306,6 +306,12 @@ namespace LoyalKullaniciTakip.Data
                       .WithMany()
                       .HasForeignKey(p => p.PuantajDurumID)
                       .OnDelete(DeleteBehavior.Restrict);
+
+                // Many-to-1 relationship with Lookup_Departmanlar (optional)
+                entity.HasOne(p => p.Departman)
+                      .WithMany()
+                      .HasForeignKey(p => p.DepartmanID)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
             // BordroHakedisKaydi entity configuration

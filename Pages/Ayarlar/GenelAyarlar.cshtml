@@ -359,6 +359,100 @@
                     }
                 </div>
             </div>
+
+            <!-- SGK Meslek Kodları Yönetimi Kartı -->
+            <div class="card mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-file-earmark-medical"></i> SGK Meslek Kodları Yönetimi
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Add New SGK Code Form -->
+                    <form method="post" asp-page-handler="AddSGKKodu" class="mb-4">
+                        <div class="row g-2">
+                            <div class="col-md-3">
+                                <input type="text" name="Kod" class="form-control" placeholder="SGK Kod (örn: 01010)" required />
+                            </div>
+                            <div class="col-md-7">
+                                <input type="text" name="Tanim" class="form-control" placeholder="Meslek tanımı giriniz..." required />
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="bi bi-plus-circle"></i> Ekle
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- SGK Code List -->
+                    @if (Model.SGKMeslekKodlari == null || !Model.SGKMeslekKodlari.Any())
+                    {
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> Henüz hiç SGK meslek kodu tanımlanmamış.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 20%;">SGK Kodu</th>
+                                        <th style="width: 60%;">Meslek Tanımı</th>
+                                        <th class="text-center" style="width: 20%;">İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var sgkKod in Model.SGKMeslekKodlari)
+                                    {
+                                        <tr>
+                                            @if (Model.EditingSGKKodId == sgkKod.MeslekKoduID)
+                                            {
+                                                <!-- Edit Mode -->
+                                                <form method="post" asp-page-handler="UpdateSGKKodu" class="d-contents">
+                                                    <input type="hidden" name="id" value="@sgkKod.MeslekKoduID" />
+                                                    <td>
+                                                        <input type="text" name="Kod" value="@sgkKod.Kod" class="form-control form-control-sm" required />
+                                                    </td>
+                                                    <td>
+                                                        <input type="text" name="Tanim" value="@sgkKod.Tanim" class="form-control form-control-sm" required />
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <button type="submit" class="btn btn-sm btn-success me-1">
+                                                            <i class="bi bi-check-circle"></i> Kaydet
+                                                        </button>
+                                                        <a href="?handler=CancelEditSGKKodu" class="btn btn-sm btn-secondary">
+                                                            <i class="bi bi-x-circle"></i> İptal
+                                                        </a>
+                                                    </td>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <!-- View Mode -->
+                                                <td><span class="badge bg-primary">@sgkKod.Kod</span></td>
+                                                <td>@sgkKod.Tanim</td>
+                                                <td class="text-center">
+                                                    <a href="?handler=EditSGKKodu&id=@sgkKod.MeslekKoduID" class="btn btn-sm btn-warning me-1">
+                                                        <i class="bi bi-pencil"></i> Düzenle
+                                                    </a>
+                                                    <form method="post" asp-page-handler="DeleteSGKKodu" class="d-inline" onsubmit="return confirm('Bu SGK meslek kodunu silmek istediğinizden emin misiniz? Bu kod personellerde kullanılıyorsa silinemez.');">
+                                                        <input type="hidden" name="id" value="@sgkKod.MeslekKoduID" />
+                                                        <button type="submit" class="btn btn-sm btn-danger">
+                                                            <i class="bi bi-trash"></i> Sil
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            }
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
         </div>
     </div>
 </div>

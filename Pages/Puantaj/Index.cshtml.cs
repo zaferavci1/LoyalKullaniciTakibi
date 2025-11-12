@@ -24,19 +24,22 @@ namespace LoyalKullaniciTakip.Pages.Puantaj
 
         public PuantajViewModel PuantajData { get; set; } = new PuantajViewModel();
         public List<Lookup_PuantajDurumlari> PuantajDurumlari { get; set; } = new List<Lookup_PuantajDurumlari>();
-        
+        public List<Lookup_Departmanlar> Departmanlar { get; set; } = new List<Lookup_Departmanlar>();
+
         // Günlük çalışma saati ayarı
         public decimal GunlukCalismaSaati { get; set; } = 8;
 
         public async Task OnGetAsync()
         {
             await LoadPuantajDurumlariAsync();
+            await LoadDepartmanlarAsync();
             await LoadGunlukCalismaSaatiAsync();
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
             await LoadPuantajDurumlariAsync();
+            await LoadDepartmanlarAsync();
             await LoadGunlukCalismaSaatiAsync();
 
             // Seçilen ay/yıl için puantaj verisini yükle
@@ -94,6 +97,7 @@ namespace LoyalKullaniciTakip.Pages.Puantaj
                                 Tarih = tarih,
                                 PuantajDurumID = kayit.PuantajDurumID,
                                 MesaiSaati = kayit.MesaiSaati,
+                                DepartmanID = kayit.DepartmanID, // Departman bilgisi
                                 Aciklama = "Manuel girdi"
                             };
                             await _context.PuantajGunluk.AddAsync(yeniKayit);
@@ -104,6 +108,7 @@ namespace LoyalKullaniciTakip.Pages.Puantaj
                             // Mevcut kaydı güncelle
                             mevcutKayit.PuantajDurumID = kayit.PuantajDurumID;
                             mevcutKayit.MesaiSaati = kayit.MesaiSaati;
+                            mevcutKayit.DepartmanID = kayit.DepartmanID; // Departman bilgisi
                             mevcutKayit.Aciklama = "Manuel güncelleme";
                             kaydedilenSayisi++;
                         }
@@ -232,7 +237,7 @@ namespace LoyalKullaniciTakip.Pages.Puantaj
             var personeller = await _context.Personeller
                 .OrderBy(p => p.Ad)
                 .ThenBy(p => p.Soyad)
-                .Select(p => new { p.PersonelID, AdSoyad = p.Ad + " " + p.Soyad })
+                .Select(p => new { p.PersonelID, AdSoyad = p.Ad + " " + p.Soyad, p.DepartmanID })
                 .ToListAsync();
 
             // b. Seçilen aydaki tüm puantaj kayıtlarını tek sorguda yükle
@@ -252,7 +257,8 @@ namespace LoyalKullaniciTakip.Pages.Puantaj
                 var satir = new PersonelPuantajSatiri
                 {
                     PersonelID = personel.PersonelID,
-                    PersonelAdSoyad = personel.AdSoyad
+                    PersonelAdSoyad = personel.AdSoyad,
+                    DepartmanID = personel.DepartmanID
                 };
 
                 // Her gün için kayıt oluştur
@@ -275,6 +281,13 @@ namespace LoyalKullaniciTakip.Pages.Puantaj
         {
             PuantajDurumlari = await _context.Lookup_PuantajDurumlari
                 .OrderBy(p => p.Kod)
+                .ToListAsync();
+        }
+
+        private async Task LoadDepartmanlarAsync()
+        {
+            Departmanlar = await _context.Lookup_Departmanlar
+                .OrderBy(d => d.Tanim)
                 .ToListAsync();
         }
 
@@ -307,6 +320,7 @@ namespace LoyalKullaniciTakip.Pages.Puantaj
         public int Gun { get; set; }
         public int PuantajDurumID { get; set; }
         public decimal? MesaiSaati { get; set; }
+        public int? DepartmanID { get; set; } // Personelin o gün hangi departmanda çalıştığı
     }
 }
 

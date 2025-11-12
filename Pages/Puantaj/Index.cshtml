@@ -67,15 +67,17 @@
     </div>
 
     <!-- Puantaj Grid -->
-    <div class="table-responsive">
-        <form method="post" asp-page-handler="SaveGrid">
-            <input type="hidden" name="SecilenAy" value="@Model.SecilenAy" />
-            <input type="hidden" name="SecilenYil" value="@Model.SecilenYil" />
+    <form method="post" asp-page-handler="SaveGrid">
+        <input type="hidden" name="SecilenAy" value="@Model.SecilenAy" />
+        <input type="hidden" name="SecilenYil" value="@Model.SecilenYil" />
+
+        <div class="table-responsive">
 
             <table class="table table-bordered table-sm" style="font-size: 0.85rem;">
                 <thead class="table-dark">
                     <tr>
-                        <th style="position: sticky; left: 0; z-index: 10; background: #212529;" class="text-white">Personel</th>
+                        <th style="position: sticky; left: 0; z-index: 10; background: #212529; min-width: 200px;" class="text-white">Personel</th>
+                        <th style="position: sticky; left: 200px; z-index: 10; background: #212529; min-width: 150px;" class="text-white">Departman</th>
                         @for (int gun = 1; gun <= aydakiGunSayisi; gun++)
                         {
                             var tarih = new DateTime(Model.PuantajData.Yil, Model.PuantajData.Ay, gun);
@@ -95,9 +97,27 @@
                     }
                     @foreach (var personel in Model.PuantajData.PersonelSatirlari)
                     {
-                        <tr>
+                        <tr data-personel-id="@personel.PersonelID">
                             <td style="position: sticky; left: 0; z-index: 5; background: white; font-weight: 500;">
                                 @personel.PersonelAdSoyad
+                            </td>
+                            <td style="position: sticky; left: 200px; z-index: 5; background: white;">
+                                <select class="form-select form-select-sm departman-select"
+                                        data-personel-id="@personel.PersonelID"
+                                        onchange="updatePersonelDepartman(@personel.PersonelID, this.value)">
+                                    <option value="">-- Seçiniz --</option>
+                                    @foreach (var dept in Model.Departmanlar)
+                                    {
+                                        @if (dept.DepartmanID == personel.DepartmanID)
+                                        {
+                                            <option value="@dept.DepartmanID" selected>@dept.Tanim</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@dept.DepartmanID">@dept.Tanim</option>
+                                        }
+                                    }
+                                </select>
                             </td>
                             @for (int gun = 1; gun <= aydakiGunSayisi; gun++)
                             {
@@ -106,12 +126,18 @@
                                 var kayit = personel.GunlukKayitlar.ContainsKey(gun) ? personel.GunlukKayitlar[gun] : null;
                                 var secilenDurumId = kayit?.PuantajDurumID ?? 0;
                                 var mesaiSaati = kayit?.MesaiSaati;
+                                var departmanId = kayit?.DepartmanID ?? personel.DepartmanID; // Kayıttaki veya personelin varsayılan departmanı
 
                                 <td class="text-center p-1 @weekendClass">
                                     <input type="hidden" name="puantajKayitlari[@kayitIndex].PersonelID" value="@personel.PersonelID" />
                                     <input type="hidden" name="puantajKayitlari[@kayitIndex].Ay" value="@Model.PuantajData.Ay" />
                                     <input type="hidden" name="puantajKayitlari[@kayitIndex].Yil" value="@Model.PuantajData.Yil" />
                                     <input type="hidden" name="puantajKayitlari[@kayitIndex].Gun" value="@gun" />
+                                    <input type="hidden"
+                                           name="puantajKayitlari[@kayitIndex].DepartmanID"
+                                           value="@departmanId"
+                                           class="departman-input"
+                                           data-personel-id="@personel.PersonelID" />
 
                                     <select name="puantajKayitlari[@kayitIndex].PuantajDurumID"
                                             id="durum_@kayitIndex"
@@ -154,15 +180,16 @@
                     }
                 </tbody>
             </table>
+        </div>
 
-            <div class="mt-3 mb-4">
-                <button type="submit" class="btn btn-success btn-lg">
-                    <i class="bi bi-save"></i> Tümünü Kaydet
-                </button>
-                <a asp-page="/Personel/Index" class="btn btn-secondary btn-lg">Personel Listesine Dön</a>
-            </div>
-        </form>
-    </div>
+        <!-- Sticky Buton Çubuğu -->
+        <div class="sticky-button-bar bg-white border-top shadow-sm p-3">
+            <button type="submit" class="btn btn-success btn-lg">
+                <i class="bi bi-save"></i> Tümünü Kaydet
+            </button>
+            <a asp-page="/Personel/Index" class="btn btn-secondary btn-lg">Personel Listesine Dön</a>
+        </div>
+    </form>
 
     <!-- Puantaj Durumları Açıklaması -->
     <div class="card mt-3">
@@ -207,6 +234,15 @@ else
         z-index: 5;
     }
 
+    /* Sticky buton çubuğu */
+    .sticky-button-bar {
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
+        margin-top: 0;
+        border-radius: 0;
+    }
+
     /* Mobil uyumluluk */
     @@media (max-width: 768px) {
         .table {
@@ -214,6 +250,13 @@ else
         }
         .table td, .table th {
             padding: 0.25rem;
+        }
+        .sticky-button-bar {
+            padding: 0.75rem !important;
+        }
+        .sticky-button-bar .btn {
+            font-size: 0.875rem;
+            padding: 0.5rem 0.75rem;
         }
     }
 </style>
@@ -265,5 +308,16 @@ else
             });
         });
     });
+
+    // Departman güncelleme fonksiyonu
+    function updatePersonelDepartman(personelId, departmanId) {
+        // O personele ait tüm departman inputlarını bul ve güncelle
+        var departmanInputs = document.querySelectorAll('.departman-input[data-personel-id="' + personelId + '"]');
+        departmanInputs.forEach(function(input) {
+            input.value = departmanId || '';
+        });
+
+        console.log('Personel ' + personelId + ' için ' + departmanInputs.length + ' gün departmanı güncellendi: ' + (departmanId || 'boş'));
+    }
 </script>
 

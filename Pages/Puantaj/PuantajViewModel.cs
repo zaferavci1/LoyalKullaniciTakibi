@@ -13,6 +13,7 @@ namespace LoyalKullaniciTakip.Pages.Puantaj
     {
         public int PersonelID { get; set; }
         public string PersonelAdSoyad { get; set; } = string.Empty;
+        public int? DepartmanID { get; set; } // Personelin varsayılan departmanı
         // Key: Gün (1-31), Value: O günkü puantaj kaydı
         public Dictionary<int, PuantajGunluk?> GunlukKayitlar { get; set; } = new Dictionary<int, PuantajGunluk?>();
     }

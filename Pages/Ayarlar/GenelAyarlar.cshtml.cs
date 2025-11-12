@@ -21,9 +21,11 @@ namespace LoyalKullaniciTakip.Pages.Ayarlar
         public List<Lookup_KidemIzinHakedis> IzinKurallari { get; set; } = new List<Lookup_KidemIzinHakedis>();
         public List<Lookup_Departmanlar> Departmanlar { get; set; } = new List<Lookup_Departmanlar>();
         public List<Lookup_Meslekler> Meslekler { get; set; } = new List<Lookup_Meslekler>();
+        public List<Lookup_MeslekKodlari> SGKMeslekKodlari { get; set; } = new List<Lookup_MeslekKodlari>();
         public int? EditingIzinKuralId { get; set; }
         public int? EditingDepartmanId { get; set; }
         public int? EditingMeslekId { get; set; }
+        public int? EditingSGKKodId { get; set; }
 
         [BindProperty]
         public Dictionary<string, string> AyarGuncelleme { get; set; } = new Dictionary<string, string>();
@@ -140,7 +142,8 @@ namespace LoyalKullaniciTakip.Pages.Ayarlar
             if (string.IsNullOrWhiteSpace(Tanim))
             {
                 TempData["ErrorMessage"] = "Departman adı boş olamaz.";
-                return RedirectToPage();
+                await LoadDataAsync();
+                return Page();
             }
 
             var existingDepartman = await _context.Lookup_Departmanlar
@@ -149,7 +152,8 @@ namespace LoyalKullaniciTakip.Pages.Ayarlar
             if (existingDepartman != null)
             {
                 TempData["ErrorMessage"] = "Bu departman zaten mevcut.";
-                return RedirectToPage();
+                await LoadDataAsync();
+                return Page();
             }
 
             var yeniDepartman = new Lookup_Departmanlar { Tanim = Tanim };
@@ -371,6 +375,122 @@ namespace LoyalKullaniciTakip.Pages.Ayarlar
             Meslekler = await _context.Lookup_Meslekler
                 .OrderBy(m => m.Tanim)
                 .ToListAsync();
+
+            SGKMeslekKodlari = await _context.Lookup_MeslekKodlari
+                .OrderBy(s => s.Kod)
+                .ToListAsync();
         }
+
+        #region SGK Meslek Kodları CRUD İşlemleri
+
+        public async Task<IActionResult> OnGetEditSGKKoduAsync(int id)
+        {
+            EditingSGKKodId = id;
+            await LoadDataAsync();
+            return Page();
+        }
+
+        public IActionResult OnGetCancelEditSGKKodu()
+        {
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostAddSGKKoduAsync(string Kod, string Tanim)
+        {
+            if (string.IsNullOrWhiteSpace(Kod) || string.IsNullOrWhiteSpace(Tanim))
+            {
+                TempData["ErrorMessage"] = "SGK Kodu ve Tanım alanları zorunludur.";
+                return RedirectToPage();
+            }
+
+            // Kod unique olmalı
+            var mevcutKod = await _context.Lookup_MeslekKodlari
+                .FirstOrDefaultAsync(s => s.Kod == Kod.Trim());
+
+            if (mevcutKod != null)
+            {
+                TempData["ErrorMessage"] = $"'{Kod}' SGK kodu zaten mevcut.";
+                return RedirectToPage();
+            }
+
+            var yeniSGKKod = new Lookup_MeslekKodlari
+            {
+                Kod = Kod.Trim(),
+                Tanim = Tanim.Trim()
+            };
+
+            _context.Lookup_MeslekKodlari.Add(yeniSGKKod);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "SGK Meslek Kodu başarıyla eklendi.";
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostUpdateSGKKoduAsync(int id, string Kod, string Tanim)
+        {
+            if (string.IsNullOrWhiteSpace(Kod) || string.IsNullOrWhiteSpace(Tanim))
+            {
+                TempData["ErrorMessage"] = "SGK Kodu ve Tanım alanları zorunludur.";
+                return RedirectToPage();
+            }
+
+            var sgkKod = await _context.Lookup_MeslekKodlari.FindAsync(id);
+            if (sgkKod == null)
+            {
+                TempData["ErrorMessage"] = "SGK Meslek Kodu bulunamadı.";
+                return RedirectToPage();
+            }
+
+            // Eğer kod değişiyorsa, yeni kodun unique olduğundan emin ol
+            if (sgkKod.Kod != Kod.Trim())
+            {
+                var mevcutKod = await _context.Lookup_MeslekKodlari
+                    .FirstOrDefaultAsync(s => s.Kod == Kod.Trim() && s.MeslekKoduID != id);
+
+                if (mevcutKod != null)
+                {
+                    TempData["ErrorMessage"] = $"'{Kod}' SGK kodu zaten başka bir kayıtta mevcut.";
+                    EditingSGKKodId = id;
+                    await LoadDataAsync();
+                    return Page();
+                }
+            }
+
+            sgkKod.Kod = Kod.Trim();
+            sgkKod.Tanim = Tanim.Trim();
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "SGK Meslek Kodu başarıyla güncellendi.";
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostDeleteSGKKoduAsync(int id)
+        {
+            var sgkKod = await _context.Lookup_MeslekKodlari.FindAsync(id);
+            if (sgkKod == null)
+            {
+                TempData["ErrorMessage"] = "SGK Meslek Kodu bulunamadı.";
+                return RedirectToPage();
+            }
+
+            // Personel kullanıyor mu kontrol et
+            var personelKullaniyor = await _context.Personel_Detay_SGK
+                .AnyAsync(p => p.SGKMeslekKoduID == id);
+
+            if (personelKullaniyor)
+            {
+                TempData["ErrorMessage"] = "Bu SGK Meslek Kodu personellerde kullanıldığı için silinemez.";
+                return RedirectToPage();
+            }
+
+            _context.Lookup_MeslekKodlari.Remove(sgkKod);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "SGK Meslek Kodu başarıyla silindi.";
+            return RedirectToPage();
+        }
+
+        #endregion
     }
 }

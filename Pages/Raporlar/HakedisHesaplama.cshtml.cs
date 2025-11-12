@@ -391,6 +391,53 @@ namespace LoyalKullaniciTakip.Pages.Raporlar
         }
 
         /// <summary>
+        /// Seçilen personel ve döneme ait departman detaylarını döndürür (AJAX handler)
+        /// </summary>
+        public async Task<IActionResult> OnGetDepartmanDetayAsync(int personelId, int ay, int yil)
+        {
+            try
+            {
+                // Seçilen dönemin ilk ve son günleri
+                var ayinIlkGunu = new DateTime(yil, ay, 1);
+                var ayinSonGunu = ayinIlkGunu.AddMonths(1).AddDays(-1);
+
+                // Personel ve dönem için departman bazında çalışma günlerini grupla
+                var departmanDetaylari = await _context.PuantajGunluk
+                    .Include(p => p.Departman)
+                    .Where(p => p.PersonelID == personelId &&
+                                p.Tarih >= ayinIlkGunu &&
+                                p.Tarih <= ayinSonGunu &&
+                                p.DepartmanID.HasValue)
+                    .GroupBy(p => new { p.DepartmanID, p.Departman!.Tanim })
+                    .Select(g => new
+                    {
+                        departmanAdi = g.Key.Tanim,
+                        gunSayisi = g.Count()
+                    })
+                    .OrderByDescending(d => d.gunSayisi)
+                    .ToListAsync();
+
+                // Toplam gün sayısını hesapla
+                var toplamGun = departmanDetaylari.Sum(d => d.gunSayisi);
+
+                return new JsonResult(new
+                {
+                    success = true,
+                    kayitlar = departmanDetaylari,
+                    toplamGun = toplamGun
+                });
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new
+                {
+                    success = false,
+                    mesaj = $"Veriler yüklenirken hata oluştu: {ex.Message}"
+                });
+            }
+        }
+
+        /// <summary>
         /// Puantaj özet raporunu oluşturur (Sprint 5 US 3 mantığı)
         /// </summary>
         private async Task<List<PuantajOzetViewModel>> GetPuantajOzetleri(int yil, int ay)
